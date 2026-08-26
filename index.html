@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>产品原型中心</title>
+  <style>
+    :root{--blue:#2f6bff;--text:#1d2a3e;--muted:#77849a;--line:#e5e9f1;--page:#f5f7fc}*{box-sizing:border-box}body{margin:0;color:var(--text);background:var(--page);font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.topbar{height:72px;display:flex;align-items:center;padding:0 40px;border-bottom:1px solid var(--line);background:#fff}.brand{font-size:21px;font-weight:700}.brand i{margin-right:8px;color:var(--blue);font-style:normal}.page{max-width:1120px;margin:0 auto;padding:48px 30px}.title{margin:0;font-size:30px}.subtitle{margin:9px 0 30px;color:var(--muted)}.notice{padding:12px 16px;margin-bottom:24px;border:1px solid #cfe0ff;border-radius:7px;color:#536985;background:#f5f9ff}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{display:flex;flex-direction:column;min-height:190px;padding:24px;border:1px solid var(--line);border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(28,45,78,.03)}.type{display:inline-flex;align-self:flex-start;padding:2px 8px;border-radius:4px;color:#2f6bff;background:#edf3ff;font-size:12px;font-weight:600}.card h2{margin:14px 0 7px;font-size:19px}.card p{flex:1;margin:0;color:var(--muted)}.actions{display:flex;gap:10px;margin-top:22px}.btn{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 13px;border:1px solid #cfdcff;border-radius:6px;color:var(--blue);background:#fff;text-decoration:none;font-weight:600}.btn.primary{color:#fff;border-color:var(--blue);background:var(--blue)}.empty{display:grid;min-height:190px;place-items:center;border:1px dashed #ccd5e3;border-radius:10px;color:#8793a7;background:#fff}@media(max-width:760px){.grid{grid-template-columns:1fr}.page{padding:30px 18px}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="brand"><i>◆</i>产品原型中心</div></header>
+  <main class="page">
+    <h1 class="title">产品交互原型</h1>
+    <p class="subtitle">统一内网入口。后续新增交互原型后，将直接在此处增加访问链接。</p>
+    <div class="notice">ⓘ 本页面仅供内部评审使用；原型均为前端交互演示，不连接生产环境。</div>
+    <section class="grid">
+      <article class="card"><span class="type">交互原型</span><h2>自动清理策略</h2><p>包含策略列表、策略详情、启停、事件审计与实例详情跳转等交互。</p><div class="actions"><a class="btn primary" href="cleanup-policy-detail-prototype.html">打开原型</a></div></article>
+      <article class="card"><span class="type">交互原型</span><h2>概览页资源使用统计</h2><p>包含私有计算资源、公共计算资源、存储资源、使用率趋势及项目监控下钻。</p><div class="actions"><a class="btn primary" href="概览页配额统计-私有配额与公共资源池.html">打开原型</a></div></article>
+      <article class="card"><span class="type">交互原型</span><h2>管理中心</h2><p>包含统一管理框架，以及按“用户 → 租户角色 → 项目角色 → 项目”查看和管理权限的用户管理模块。</p><div class="actions"><a class="btn primary" href="管理中心-用户权限分级原型.html">打开原型</a></div></article>
+      <article class="empty">后续新增交互原型，将在这里持续补充。</article>
+    </section>
+  </main>
+</body>
+</html>

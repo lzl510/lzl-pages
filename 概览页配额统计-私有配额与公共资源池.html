@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>资源使用统计原型</title>
+  <style>
+    :root{--blue:#2f6bff;--blue-weak:#edf3ff;--text:#1f2c42;--muted:#748198;--line:#e5e9f1;--page:#f5f7fc;--green:#23b26d;--orange:#e99a12;--red:#d95555}*{box-sizing:border-box}body{margin:0;min-width:1180px;color:var(--text);background:var(--page);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(47,107,255,.22);outline-offset:2px}.topbar{height:76px;display:flex;align-items:center;gap:34px;padding:0 25px;border-bottom:1px solid var(--line);background:#fff;box-shadow:0 2px 10px rgba(28,45,78,.04)}.hamburger{color:#526078;font-size:27px;line-height:1}.brand{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:23px;font-weight:700}.brand-mark{color:#2079f4;font-size:30px;font-style:italic;font-weight:900}.main-nav{display:flex;align-items:center;align-self:stretch;gap:46px}.main-nav span{position:relative;display:grid;place-items:center;color:#536078;font-size:18px;font-weight:600;white-space:nowrap}.main-nav .active{color:var(--blue)}.main-nav .active:after{content:"";position:absolute;right:0;bottom:0;left:0;height:3px;border-radius:2px;background:var(--blue)}.top-actions{display:flex;align-items:center;gap:24px;margin-left:auto;color:#526078;font-size:16px}.avatar{display:grid;place-items:center;width:40px;height:40px;border:3px solid #f3f7ff;border-radius:50%;color:#fff;background:#dce9ff;font-size:20px}.page{width:min(100%,1420px);margin:0 auto;padding:38px 30px 64px}.page-title{display:flex;align-items:center;gap:12px;margin:0 0 28px;font-size:28px}.page-title span{color:var(--muted);font-size:14px;font-weight:400}.heading{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:18px}.heading h2{margin:0;font-size:23px}.segmented{display:inline-flex;padding:3px;border:1px solid #dce3ef;border-radius:7px;background:#fff}.segment{min-width:110px;height:34px;border:0;border-radius:5px;color:#66758d;background:transparent;font-weight:600}.segment.active{color:#fff;background:var(--blue);box-shadow:0 2px 5px rgba(47,107,255,.25)}.source-tip{display:flex;gap:10px;align-items:flex-start;padding:13px 16px;margin-bottom:20px;border:1px solid #cfe0ff;border-radius:6px;color:#536985;background:#f5f9ff}.source-tip strong,.info{color:#305dbe}.info{font-weight:700}.section-card{padding:24px;border-radius:8px;background:#fff;box-shadow:0 1px 2px rgba(30,48,85,.03)}.section-card+.section-card{margin-top:22px}.domain-card{padding:0;overflow:hidden}.domain-card+.domain-card{margin-top:22px}.domain-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:24px 24px 0;margin:0}.domain-header h3{margin:0;font-size:21px}.domain-header p{margin:5px 0 0;color:#8a96a9;font-size:13px}.domain-subsection{padding:24px}.domain-subsection+.domain-subsection{border-top:1px solid var(--line)}.card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:21px}.card-header h3{margin:0;font-size:19px}.card-header p{margin:5px 0 0;color:#8a96a9;font-size:13px}.updated{color:#8a96a9;font-size:13px}.section-label{margin:26px 0 12px;font-size:17px;font-weight:700}.resource-grid{display:grid;grid-template-columns:repeat(3,minmax(255px,1fr));gap:18px}.storage-grid{display:grid;grid-template-columns:repeat(2,minmax(255px,1fr));gap:18px}.resource-card{min-height:163px;padding:22px 24px;border:1px solid #edf0f5;border-radius:10px;background:#fbfcff}.resource-card.storage{min-height:175px;background:#fff}.resource-name{margin-bottom:15px;color:#28364d;font-size:18px;font-weight:700}.resource-name small{color:#8793a7;font-size:13px;font-weight:400}.metric-label{color:#8d98aa;font-size:13px}.metrics{display:flex;align-items:baseline;gap:7px;margin:3px 0 16px}.metrics strong{color:#2b3039;font-size:29px;letter-spacing:.2px}.metrics .slash{color:#bdc5d0;font-size:22px}.metrics span:last-child{color:#66758d;font-size:18px}.meter-row{display:flex;align-items:center;gap:12px}.meter{position:relative;flex:1;height:12px;overflow:hidden;border-radius:3px;background:repeating-linear-gradient(90deg,#e7edf6 0 8px,transparent 8px 11px)}.meter i{display:block;height:100%;border-radius:3px;background:repeating-linear-gradient(90deg,#28b768 0 8px,transparent 8px 11px)}.meter.warn i{background:#e7a623}.meter-rate{min-width:49px;color:#66758d;text-align:right;font-size:13px}.card-meta{margin-top:11px;color:#8a96a9;font-size:12px}.tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}select,.project-input{min-width:150px;height:38px;padding:0 28px 0 11px;border:1px solid #dfe5ee;border-radius:6px;color:#4e5d75;background:#fff}.project-input{width:210px;padding-right:11px}.sort{height:38px;padding:0 12px;border:1px solid #dfe5ee;border-radius:6px;color:#53627b;background:#fff}.sort:hover{border-color:#adc5ff;color:var(--blue);background:#f7f9ff}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}table{width:100%;min-width:820px;border-collapse:collapse}th{height:53px;padding:0 16px;color:#334059;text-align:left;white-space:nowrap;background:#f6f7f9;font-size:15px}td{padding:16px;border-top:1px solid var(--line);color:#3a4861}tr:hover td{background:#fbfcff}.project{color:#2d6bea;font-weight:600}.spec-tag{display:inline-block;padding:3px 8px;border-radius:4px;color:#52627c;background:#f0f3f7;font-size:13px}.rate{color:#31405a;font-weight:600}.mini-meter{width:104px;height:7px;overflow:hidden;border-radius:8px;background:#e8ecf3}.mini-meter i{display:block;height:100%;border-radius:8px;background:#4e80ff}.bar-cell{display:flex;align-items:center;gap:9px}.link-button{border:0;padding:0;color:var(--blue);background:transparent;font-weight:600}.link-button:hover{text-decoration:underline}.empty{padding:42px 16px;color:#8793a7;text-align:center}.trend-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:9px}.trend-controls input{width:132px;height:38px;padding:0 8px;border:1px solid #dfe5ee;border-radius:6px;color:#4e5d75;background:#fff}.trend-grid{display:grid;grid-template-columns:repeat(2,minmax(330px,1fr));gap:18px}.trend-panel{min-width:0;padding:18px 16px 12px;border:1px solid #edf0f5;border-radius:8px;background:#fff}.trend-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 4px 10px}.trend-panel h4{margin:0;font-size:16px}.trend-unit{color:#8793a7;font-size:12px}.trend-panel-head select{min-width:134px;height:31px;font-size:12px}.legend{display:flex;flex-wrap:wrap;gap:13px;margin:0 4px 6px;color:#68768c;font-size:12px}.legend i{display:inline-block;width:8px;height:8px;margin-right:4px;border-radius:50%;background:#23b26d}.trend-svg{display:block;width:100%;height:auto;overflow:visible}.trend-svg .grid{stroke:#e9edf4;stroke-width:1}.trend-svg .axis{fill:#8793a7;font-size:10px}.trend-svg .line-used{fill:none;stroke:#23b26d;stroke-width:2.5}.trend-svg .dot-used{fill:#fff;stroke:#23b26d;stroke-width:2}.detail-page-head{display:flex;align-items:center;gap:13px;margin:0 0 18px}.back{width:34px;height:34px;border:0;border-radius:5px;color:#64728b;background:#fff;font-size:28px}.back:hover{color:var(--blue);background:#edf3ff}.detail-page-head h1{margin:0;font-size:27px}.monitor-note{display:flex;gap:10px;align-items:flex-start;padding:13px 16px;margin-bottom:18px;border:1px solid #cfe0ff;border-radius:6px;color:#536985;background:#f5f9ff}.monitor-tabs{display:flex;gap:28px;border-bottom:1px solid var(--line);margin-bottom:20px}.monitor-tab{position:relative;padding:11px 4px;border:0;color:#65738a;background:transparent;font-size:16px}.monitor-tab.active{color:var(--blue);font-weight:700}.monitor-tab.active:after{content:"";position:absolute;right:0;bottom:-1px;left:0;height:3px;background:var(--blue)}.physical-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.node-status{color:#18a35e;font-size:13px}.node-status:before{content:'•';padding-right:5px;font-size:20px;vertical-align:-2px}.resource-model{color:#53627b}.physical-table{table-layout:fixed}.physical-table .metric-group{text-align:center}.physical-table .metric-header,.physical-table .metric-number{width:66px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.physical-table .rate-header,.physical-table .rate-cell{width:78px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.rate-text{color:#52627c}.rate-text.high{color:#d88700;font-weight:600}.task-status{display:inline-block;padding:2px 7px;border-radius:4px;color:#1c9b58;background:#e7faee;font-size:12px}.toast{position:fixed;z-index:9;bottom:38px;left:50%;display:flex;gap:8px;align-items:center;padding:11px 16px;border-radius:6px;color:#fff;background:#253653;box-shadow:0 8px 24px rgba(25,41,70,.22);opacity:0;transform:translate(-50%,20px);pointer-events:none;transition:.22s}.toast.show{opacity:1;transform:translate(-50%,0)}@media(max-width:1320px){.resource-grid{grid-template-columns:repeat(2,minmax(260px,1fr))}.trend-grid{grid-template-columns:1fr}}
+    .gpu-detail{margin-top:18px;border:1px solid #e7ebf2;border-radius:8px;background:#fbfcff}.gpu-detail-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;height:52px;padding:0 18px;border:0;color:#33425b;background:transparent;font-weight:600;text-align:left}.gpu-detail-toggle:hover{background:#f5f8ff}.gpu-detail-toggle b{display:inline-grid;place-items:center;min-width:22px;height:22px;margin-left:7px;border-radius:11px;color:#2f6bff;background:#eaf1ff;font-size:12px}.gpu-detail-arrow{color:#718099;font-size:17px}.gpu-model-grid{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:14px;padding:0 18px 18px}.gpu-model-grid[hidden]{display:none}.gpu-model-grid .resource-card{min-height:142px;padding:17px 18px;background:#fff}.gpu-model-grid .resource-name{margin-bottom:11px;font-size:16px}.gpu-model-grid .metrics{margin-bottom:12px}.gpu-model-grid .metrics strong{font-size:24px}
+  </style>
+</head>
+<body>
+  <header class="topbar"><span class="hamburger">☰</span><div class="brand"><span class="brand-mark">〽</span>仪电智算云</div><nav class="main-nav"><span class="active">概览</span><span>模型服务中心</span><span>应用中心</span><span>资产中心</span><span>管理中心</span></nav><div class="top-actions"><span>◔ 工单</span><span>▣ 文档</span><span class="avatar">●</span><span>⌄</span></div></header>
+  <main class="page"><div id="overview-page"><h1 class="page-title">概览</h1><div class="heading"><h2>资源使用统计</h2></div><div id="source-tip" class="source-tip" hidden></div><section id="stat-content"></section></div><section id="monitor-page" hidden></section></main>
+  <div id="toast" class="toast">✓ <span></span></div>
+  <script>
+    const availableSources=['private','public'];
+    const resourceData={
+      private:{title:'私有计算资源',description:'按当前租户纳管的实际私有机器容量统计计算资源使用情况。',compute:[{name:'CPU',detail:'核数',unit:'核',total:800,used:444},{name:'内存',detail:'GiB',unit:'GiB',total:2048,used:1112},{name:'GPU · NVIDIA A800 80G',detail:'卡数',unit:'卡',total:64,used:29},{name:'GPU · NVIDIA L40S',detail:'卡数',unit:'卡',total:32,used:9},{name:'GPU · NVIDIA H20',detail:'卡数',unit:'卡',total:8,used:8}],storage:[]},
+      public:{title:'公有计算资源',description:'按资源组配置的配额，展示当前租户公共计算资源的分配情况。',compute:[{name:'CPU',detail:'核数',unit:'核',total:2000000,used:68},{name:'GPU · NVIDIA A800 80G',detail:'卡数',unit:'卡',total:2000,used:31},{name:'GPU · NVIDIA L40S',detail:'卡数',unit:'卡',total:1200,used:8},{name:'GPU · NVIDIA H20',detail:'卡数',unit:'卡',total:1000,used:6}],storage:[{name:'文件存储',detail:'容量',unit:'TiB',total:1000,used:126,updated:'2026-08-18 10:25:00'},{name:'对象存储',detail:'容量',unit:'TiB',total:2000,used:364,updated:'2026-08-18 10:20:00'}]},
+      storage:{title:'存储资源概览',description:'展示当前租户文件存储与对象存储的实际容量使用情况。',compute:[],storage:[{name:'文件存储',detail:'容量',unit:'TiB',total:120,used:74,updated:'2026-08-18 10:25:00'},{name:'对象存储',detail:'容量',unit:'TiB',total:200,used:118,updated:'2026-08-18 10:20:00'}]}
+    };
+    const projectRows=[{project:'myytest',spec:'CPU',unit:'核',total:200,used:145},{project:'myytest',spec:'内存',unit:'GiB',total:512,used:384},{project:'myytest',spec:'NVIDIA A800 80G',unit:'卡',total:16,used:12},{project:'myytest',spec:'NVIDIA L40S',unit:'卡',total:8,used:3},{project:'myytest',spec:'NVIDIA H20',unit:'卡',total:8,used:8},{project:'rayjobowner',spec:'CPU',unit:'核',total:160,used:86},{project:'rayjobowner',spec:'内存',unit:'GiB',total:384,used:220},{project:'rayjobowner',spec:'NVIDIA A800 80G',unit:'卡',total:8,used:6},{project:'algorithm-lab',spec:'CPU',unit:'核',total:120,used:55},{project:'algorithm-lab',spec:'内存',unit:'GiB',total:256,used:112},{project:'algorithm-lab',spec:'NVIDIA A800 80G',unit:'卡',total:8,used:3},{project:'nlp-platform',spec:'CPU',unit:'核',total:120,used:72},{project:'nlp-platform',spec:'内存',unit:'GiB',total:384,used:248},{project:'nlp-platform',spec:'NVIDIA A800 80G',unit:'卡',total:12,used:5},{project:'recommendation',spec:'CPU',unit:'核',total:80,used:46},{project:'recommendation',spec:'内存',unit:'GiB',total:192,used:103},{project:'recommendation',spec:'NVIDIA A800 80G',unit:'卡',total:8,used:3},{project:'data-science',spec:'CPU',unit:'核',total:60,used:22},{project:'data-science',spec:'内存',unit:'GiB',total:128,used:45},{project:'data-science',spec:'NVIDIA L40S',unit:'卡',total:8,used:4}];
+    projectRows.push(
+      {project:'multimodal-lab',spec:'CPU',unit:'核',total:96,used:64},{project:'multimodal-lab',spec:'内存',unit:'GiB',total:384,used:286},{project:'multimodal-lab',spec:'NVIDIA H20',unit:'卡',total:8,used:6},
+      {project:'vision-platform',spec:'CPU',unit:'核',total:128,used:42},{project:'vision-platform',spec:'内存',unit:'GiB',total:512,used:168},{project:'vision-platform',spec:'NVIDIA L40S',unit:'卡',total:12,used:4},
+      {project:'knowledge-base',spec:'CPU',unit:'核',total:72,used:38},{project:'knowledge-base',spec:'内存',unit:'GiB',total:192,used:96},{project:'knowledge-base',spec:'NVIDIA A800 80G',unit:'卡',total:4,used:2},
+      {project:'inference-gateway',spec:'CPU',unit:'核',total:48,used:31},{project:'inference-gateway',spec:'内存',unit:'GiB',total:128,used:88}
+    );
+    const physicalResources={myytest:[{node:'10.21.67.234',type:'普通 GPU 节点',model:'NVIDIA A800 80G',cpu:'48 / 64',memory:'384 / 512',gpu:'4 / 4',cpuRate:76,memoryRate:82,gpuRate:93},{node:'10.21.67.235',type:'普通 GPU 节点',model:'NVIDIA A800 80G',cpu:'32 / 64',memory:'256 / 512',gpu:'4 / 4',cpuRate:51,memoryRate:63,gpuRate:88},{node:'10.21.68.101',type:'普通 GPU 节点',model:'NVIDIA L40S',cpu:'18 / 32',memory:'128 / 256',gpu:'3 / 4',cpuRate:58,memoryRate:49,gpuRate:74},{node:'10.21.68.102',type:'普通 GPU 节点',model:'NVIDIA L40S',cpu:'8 / 32',memory:'64 / 256',gpu:'0 / 4',cpuRate:19,memoryRate:26,gpuRate:0},{node:'10.21.69.51',type:'普通 GPU 节点',model:'NVIDIA H20',cpu:'39 / 40',memory:'320 / 384',gpu:'8 / 8',cpuRate:94,memoryRate:88,gpuRate:97},{node:'10.21.66.18',type:'CPU 节点',model:'CPU 通用计算',cpu:'145 / 200',memory:'384 / 512',gpu:'—',cpuRate:72,memoryRate:75,gpuRate:null}]};
+    const taskRows=[{name:'llm-finetune-a800',id:'j-1786933464-767723',type:'自定义任务',status:'运行中',cpu:'40 / 48 核',memory:'280 / 320 GiB',gpu:'4 / 4 卡',cpuRate:83,memoryRate:71,gpuRate:94},{name:'embedding-train',id:'j-1786933510-812400',type:'自定义任务',status:'运行中',cpu:'18 / 32 核',memory:'96 / 192 GiB',gpu:'2 / 4 卡',cpuRate:56,memoryRate:50,gpuRate:67},{name:'dev-a800-01',id:'d-1786933618',type:'开发机',status:'运行中',cpu:'10 / 16 核',memory:'42 / 64 GiB',gpu:'1 / 1 卡',cpuRate:35,memoryRate:48,gpuRate:12}];
+    const d=['2026-08-12','2026-08-13','2026-08-14','2026-08-15','2026-08-16','2026-08-17','2026-08-18'],series=(unit,used,total)=>({unit,used,total});
+    const trendData={private:{dates:d,cpu:series('核',[352,368,387,401,426,438,444],[760,760,784,784,800,800,800]),memory:series('GiB',[860,892,930,982,1036,1080,1112],[1984,1984,2048,2048,2048,2048,2048]),gpuModels:{'GPU 总卡数':series('卡',[36,39,42,44,46,47,46],[72,72,76,76,88,96,104]),'NVIDIA A800 80G':series('卡',[20,22,24,25,27,29,29],[40,40,48,48,56,64,64]),'NVIDIA L40S':series('卡',[8,8,9,10,10,9,9],[24,24,24,24,32,32,32]),'NVIDIA H20':series('卡',[8,8,8,8,8,8,8],[8,8,8,8,8,8,8])},storage:{'文件存储':series('TiB',[58,61,63,66,68,72,74],[100,100,110,110,120,120,120]),'对象存储':series('TiB',[92,95,100,104,108,113,118],[160,160,180,180,200,200,200])}},public:{dates:d,cpu:series('核',[36,42,46,51,56,62,68],[2000000,2000000,2000000,2000000,2000000,2000000,2000000]),memory:series('GiB',[226,240,268,287,312,344,368],[8000000,8000000,8000000,8000000,8000000,8000000,8000000]),gpuModels:{'GPU 总卡数':series('卡',[22,24,28,33,37,41,45],[3600,3600,3800,4000,4100,4200,4200]),'NVIDIA A800 80G':series('卡',[14,16,18,20,24,28,31],[1800,1800,1900,2000,2000,2000,2000]),'NVIDIA L40S':series('卡',[5,5,6,7,7,8,8],[1000,1000,1100,1100,1200,1200,1200]),'NVIDIA H20':series('卡',[3,3,4,6,6,5,6],[800,800,800,900,900,1000,1000])},storage:{'文件存储':series('TiB',[80,88,97,101,112,121,126],[800,800,850,900,950,1000,1000]),'对象存储':series('TiB',[252,268,280,297,315,342,364],[1800,1800,1800,1900,1900,2000,2000])}}};
+    trendData.storage={dates:d,storage:{'文件存储':series('TiB',[58,61,63,66,68,72,74],[100,100,110,110,120,120,120]),'对象存储':series('TiB',[92,95,100,104,108,113,118],[160,160,180,180,200,200,200])}};
+    let source='private',project='__tenant__',spec='all',gpuTrend='GPU 总卡数',storageTrend='文件存储',customStart='2026-08-12',customEnd='2026-08-18',storageStart='2026-08-12',storageEnd='2026-08-18',monitorTab='machines';const statContent=document.getElementById('stat-content'),sourceTip=document.getElementById('source-tip'),format=n=>new Intl.NumberFormat('zh-CN').format(n),percent=(used,total)=>total?Math.round(used/total*10000)/100:0;
+    function meter(rate){return `<div class="meter ${rate>=80?'warn':''}"><i style="width:${Math.min(rate,100)}%"></i></div><span class="meter-rate">${rate}%</span>`}function card(item,storage=false,metricLabel='已使用 / 总量'){const rate=percent(item.used,item.total);return `<article class="resource-card ${storage?'storage':''}"><div class="resource-name">${item.name} <small>（${item.detail}）</small></div><div class="metric-label">${metricLabel}</div><div class="metrics"><strong>${format(item.used)}</strong><span class="slash">/</span><span>${format(item.total)} ${item.unit}</span></div><div class="meter-row">${meter(rate)}</div>${storage?`<div class="card-meta">最近统计：${item.updated}</div>`:''}</article>`}function gpuTotal(cards){const gpu=cards.filter(x=>x.name.startsWith('GPU ·'));return{name:'GPU',detail:'总卡数',unit:'卡',total:gpu.reduce((s,x)=>s+x.total,0),used:gpu.reduce((s,x)=>s+x.used,0)}}
+    function privateDetails(){const projects=[...new Set(projectRows.map(x=>x.project))],specs=[...new Set(projectRows.map(x=>x.spec))],order=['CPU','内存','NVIDIA A800 80G','NVIDIA L40S','NVIDIA H20'],rows=projectRows.filter(x=>x.project===project&&(spec==='all'||x.spec===spec)).sort((a,b)=>order.indexOf(a.spec)-order.indexOf(b.spec));const body=rows.map(x=>{const rate=percent(x.used,x.total);return `<tr><td class="project">${x.project}</td><td><span class="spec-tag">${x.spec}</span></td><td>${format(x.used)} ${x.unit}</td><td>${format(x.total)} ${x.unit}</td><td><div class="bar-cell"><div class="mini-meter"><i style="width:${rate}%"></i></div><span class="rate">${rate}%</span></div></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">暂无匹配资源</div></td></tr>';return `<section class="section-card"><div class="card-header"><div><h3>项目资源使用明细</h3><p>仅展示当前用户有权限查看的项目；默认按 CPU、内存、GPU 卡型排序。</p></div><div class="tools"><input id="project-filter" class="project-input" list="project-options" value="${project}" placeholder="搜索或选择项目" aria-label="搜索项目"/><datalist id="project-options">${projects.map(x=>`<option value="${x}"></option>`).join('')}</datalist><select id="spec-filter" aria-label="资源规格"><option value="all">全部资源规格</option>${specs.map(x=>`<option value="${x}" ${x===spec?'selected':''}>${x}</option>`).join('')}</select><button id="view-monitor" class="sort">查看资源监控详情</button></div></div><div class="table-wrap"><table><thead><tr><th>项目</th><th>资源规格</th><th>已使用</th><th>总量</th><th>使用率</th></tr></thead><tbody>${body}</tbody></table></div></section>`}
+    function trendSvg(data,labels,usedLabel='已使用',totalLabel='总量'){const w=360,h=190,l=43,r=14,t=12,b=30,pw=w-l-r,ph=h-t-b,values=data.used.map((v,i)=>Math.round(v/data.total[i]*1000)/10),x=i=>labels.length===1?l+pw/2:l+pw/(labels.length-1)*i,y=v=>t+ph-(v/100)*ph,points=values.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' '),grid=[0,.5,1].map(k=>{const v=Math.round(100*(1-k)),py=t+ph*k;return `<line class="grid" x1="${l}" x2="${w-r}" y1="${py}" y2="${py}"/><text class="axis" x="${l-7}" y="${py+3}" text-anchor="end">${v}%</text>`}).join(''),labelsSvg=labels.map((v,i)=>`<text class="axis" x="${x(i)}" y="${h-9}" text-anchor="middle">${v}</text>`).join(''),dots=values.map((v,i)=>`<circle class="dot-used" cx="${x(i)}" cy="${y(v)}" r="2.5"><title>${labels[i]}：${usedLabel} ${format(data.used[i])} ${data.unit} / ${totalLabel} ${format(data.total[i])} ${data.unit}，${v}%</title></circle>`).join('');return `<svg class="trend-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="${usedLabel}资源趋势"><title>纵轴为${usedLabel}/${totalLabel}百分比</title>${grid}<polyline class="line-used" points="${points}"/>${dots}${labelsSvg}</svg>`}function trendPanel(title,data,labels,selector='',usedLabel='已使用',totalLabel='总量'){const i=data.total.length-1;return `<article class="trend-panel"><div class="trend-panel-head"><h4>${title}</h4>${selector||`<span class="trend-unit">水位：${usedLabel} / ${totalLabel}</span>`}</div><div class="legend"><span><i></i>当前：${format(data.used[i])} / ${format(data.total[i])} ${data.unit}（${percent(data.used[i],data.total[i])}%）</span></div>${trendSvg(data,labels,usedLabel,totalLabel)}</article>`}
+    function trendSection(){const trends=trendData[source],idx=trends.dates.map((date,i)=>({date,i})).filter(x=>x.date>=customStart&&x.date<=customEnd).map(x=>x.i),labels=idx.map(i=>trends.dates[i].slice(5).replace('-','/')),clip=x=>({unit:x.unit,used:idx.map(i=>x.used[i]),total:idx.map(i=>x.total[i])}),gpuOptions=Object.keys(trends.gpuModels),storageOptions=Object.keys(trends.storage),gpuSelector=`<select id="gpu-trend-filter" aria-label="GPU 趋势维度">${gpuOptions.map(x=>`<option value="${x}" ${x===gpuTrend?'selected':''}>${x}</option>`).join('')}</select>`,storageSelector=storageOptions.length>1?`<select id="storage-trend-filter" aria-label="存储趋势维度">${storageOptions.map(x=>`<option value="${x}" ${x===storageTrend?'selected':''}>${x}</option>`).join('')}</select>`:'';return `<section class="section-card"><div class="card-header"><div><h3>使用资源水位趋势</h3><p>纵轴统一按“已使用 / 总量”百分比统计；资源总量变化时按对应时点的实际总量计算。</p></div><div class="trend-controls"><span class="trend-unit">时间范围</span><input id="custom-start" type="date" value="${customStart}"/><span>至</span><input id="custom-end" type="date" value="${customEnd}"/><button id="apply-custom-range" class="sort">查询</button></div></div><div class="trend-grid">${trendPanel('CPU 使用率趋势',clip(trends.cpu),labels)}${trendPanel('内存使用率趋势',clip(trends.memory),labels)}${trendPanel('GPU 使用率趋势',clip(trends.gpuModels[gpuTrend]),labels,gpuSelector)}${trendPanel('存储使用率趋势',clip(trends.storage[storageTrend]),labels,storageSelector)}</div></section>`}
+    function trendSection(){const trends=trendData[source],idx=trends.dates.map((date,i)=>({date,i})).filter(x=>x.date>=customStart&&x.date<=customEnd).map(x=>x.i),labels=idx.map(i=>trends.dates[i].slice(5).replace('-','/')),clip=x=>({unit:x.unit,used:idx.map(i=>x.used[i]),total:idx.map(i=>x.total[i])}),range=`<div class="trend-controls"><span class="trend-unit">时间范围</span><input id="custom-start" type="date" value="${customStart}"/><span>至</span><input id="custom-end" type="date" value="${customEnd}"/><button id="apply-custom-range" class="sort">查询</button></div>`;if(source==='storage'){return `<section class="section-card"><div class="card-header"><div><h3>存储资源水位趋势</h3><p>纵轴按“已使用 / 总量”百分比统计，文件存储与对象存储独立展示。</p></div>${range}</div><div class="trend-grid">${trendPanel('文件存储使用率趋势',clip(trends.storage['文件存储']),labels)}${trendPanel('对象存储使用率趋势',clip(trends.storage['对象存储']),labels)}</div></section>`}const gpuOptions=Object.keys(trends.gpuModels),gpuSelector=`<select id="gpu-trend-filter" aria-label="GPU 趋势维度">${gpuOptions.map(x=>`<option value="${x}" ${x===gpuTrend?'selected':''}>${x}</option>`).join('')}</select>`;return `<section class="section-card"><div class="card-header"><div><h3>计算资源水位趋势</h3><p>纵轴统一按“已使用 / 总量”百分比统计；资源总量变化时按对应时点的实际总量计算。</p></div>${range}</div><div class="trend-grid">${trendPanel('CPU 使用率趋势',clip(trends.cpu),labels)}${trendPanel('内存使用率趋势',clip(trends.memory),labels)}${trendPanel('GPU 使用率趋势',clip(trends.gpuModels[gpuTrend]),labels,gpuSelector)}</div></section>`}
+    function metricColumns(capacity,rate){const m=capacity.match(/(\d+)\s*\/\s*(\d+)/);return!m?'<td class="metric-number">—</td><td class="metric-number">—</td><td class="rate-cell">—</td>':`<td class="metric-number">${m[1]}</td><td class="metric-number">${m[2]}</td><td class="rate-cell"><span class="rate-text ${rate>=85?'high':''}">${rate}%</span></td>`}function machineTable(rows){return `<div class="table-wrap"><table class="physical-table" style="min-width:1300px"><thead><tr><th rowspan="2">节点名称</th><th rowspan="2">状态</th><th rowspan="2">节点类型</th><th rowspan="2">GPU 卡型</th><th colspan="3" class="metric-group">CPU（核）</th><th colspan="3" class="metric-group">内存（GiB）</th><th colspan="3" class="metric-group">GPU（卡）</th></tr><tr><th class="metric-header">已使用</th><th class="metric-header">总量</th><th class="rate-header">使用率</th><th class="metric-header">已使用</th><th class="metric-header">总量</th><th class="rate-header">使用率</th><th class="metric-header">已使用</th><th class="metric-header">总量</th><th class="rate-header">使用率</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.node}</td><td><span class="node-status">Ready</span></td><td>${x.type}</td><td class="resource-model">${x.model}</td>${metricColumns(x.cpu,x.cpuRate)}${metricColumns(x.memory,x.memoryRate)}${metricColumns(x.gpu,x.gpuRate)}</tr>`).join('')}</tbody></table></div>`}function taskTable(){return `<div class="table-wrap"><table><thead><tr><th>任务/实例名称</th><th>资源 ID</th><th>类型</th><th>状态</th><th>CPU 使用率</th><th>内存使用率</th><th>GPU 使用率</th></tr></thead><tbody>${taskRows.map(x=>`<tr><td class="project">${x.name}</td><td>${x.id}</td><td>${x.type}</td><td><span class="task-status">${x.status}</span></td><td>${x.cpu}<br><span class="rate-text">${x.cpuRate}%</span></td><td>${x.memory}<br><span class="rate-text">${x.memoryRate}%</span></td><td>${x.gpu}<br><span class="rate-text ${x.gpuRate>=85?'high':''}">${x.gpuRate}%</span></td></tr>`).join('')}</tbody></table></div>`}
+    function openMonitor(){const rows=physicalResources[project]||[{node:'10.21.70.12',type:'CPU 节点',model:'CPU 通用计算',cpu:'22 / 60',memory:'96 / 256',gpu:'—',cpuRate:36,memoryRate:42,gpuRate:null}];document.getElementById('overview-page').hidden=true;const page=document.getElementById('monitor-page');page.hidden=false;page.innerHTML=`<div class="detail-page-head"><button id="back-overview" class="back" aria-label="返回概览">‹</button><h1>${project} 资源监控详情</h1></div><div class="monitor-note"><span class="info">ⓘ</span><span>查看项目 <strong>${project}</strong> 的机器与任务资源使用情况；使用率反映实际资源利用水平。</span></div><div class="monitor-tabs"><button class="monitor-tab ${monitorTab==='machines'?'active':''}" data-tab="machines">机器资源</button><button class="monitor-tab ${monitorTab==='tasks'?'active':''}" data-tab="tasks">任务资源</button></div><section class="section-card"><div class="physical-toolbar"><div><h3 style="margin:0">${monitorTab==='machines'?'机器资源列表':'任务资源列表'}</h3><p style="margin:5px 0 0;color:#8a96a9">${monitorTab==='machines'?'节点维度展示资源已使用、总量及使用率。':'任务/实例维度展示申请资源与实际使用率。'}</p></div></div>${monitorTab==='machines'?machineTable(rows):taskTable()}</section>`;document.getElementById('back-overview').onclick=()=>{page.hidden=true;document.getElementById('overview-page').hidden=false;render()};page.querySelectorAll('[data-tab]').forEach(x=>x.onclick=()=>{monitorTab=x.dataset.tab;openMonitor()})}
+    function render(){const data=resourceData[source],compute=[...data.compute.slice(0,2),gpuTotal(data.compute),...data.compute.slice(2)];document.querySelectorAll('.segment').forEach(x=>x.classList.toggle('active',x.dataset.source===source));document.getElementById('source-switch')?.toggleAttribute('hidden',availableSources.length<2);sourceTip.innerHTML=`<span class="info">ⓘ</span><div><strong>${source==='private'?'私有资源':'公共资源'}</strong>：${source==='private'?'资源总量为当前租户实际纳管的私有机器容量。':'资源总量为当前租户可使用的公共资源总量。'} 所有资源均按“已使用 / 总量”统计。</div>`;const block=compute.length?`<section class="section-card"><div class="card-header"><div><h3>${data.title}</h3><p>${data.description}</p></div><span class="updated">数据更新时间：2026-08-18 10:30:00</span></div><div class="resource-grid">${compute.map(x=>card(x)).join('')}</div><h3 class="section-label">存储资源</h3><div class="storage-grid">${data.storage.length?data.storage.map(x=>card(x,true)).join(''):'<div class="empty">暂不支持存储资源统计</div>'}</div></section>`:'<section class="section-card"><div class="empty">当前租户暂无可展示的资源</div></section>';statContent.innerHTML=`${block}${trendSection()}${source==='private'?privateDetails():''}`;bindEvents()}
+    function render(){const data=resourceData[source];document.querySelectorAll('.segment').forEach(x=>x.classList.toggle('active',x.dataset.source===source));document.getElementById('source-switch')?.toggleAttribute('hidden',availableSources.length<2);const isStorage=source==='storage';sourceTip.innerHTML=`<span class="info">ⓘ</span><div><strong>${source==='private'?'私有计算资源':source==='public'?'公共计算资源':'存储资源'}</strong>：${source==='private'?'资源总量为当前租户实际纳管的私有机器容量。':source==='public'?'资源总量为当前租户可使用的公共计算资源总量。':'文件存储与对象存储按租户维度独立统计容量使用情况。'} 所有资源均按“已使用 / 总量”统计。</div>`;let overview='';if(isStorage){overview=`<section class="section-card"><div class="card-header"><div><h3>${data.title}</h3><p>${data.description}</p></div><span class="updated">数据更新时间：2026-08-18 10:30:00</span></div><div class="storage-grid">${data.storage.length?data.storage.map(x=>card(x,true)).join(''):'<div class="empty">暂不支持存储资源统计</div>'}</div></section>`}else{const compute=[...data.compute.slice(0,2),gpuTotal(data.compute),...data.compute.slice(2)];overview=compute.length?`<section class="section-card"><div class="card-header"><div><h3>${data.title}</h3><p>${data.description}</p></div><span class="updated">数据更新时间：2026-08-18 10:30:00</span></div><div class="resource-grid">${compute.map(x=>card(x)).join('')}</div></section>`:'<section class="section-card"><div class="empty">当前租户暂无可展示的计算资源</div></section>'}statContent.innerHTML=`${overview}${trendSection()}${source==='private'?privateDetails():''}`;bindEvents()}
+    function bindEvents(){const pf=document.getElementById('project-filter');if(pf)pf.onchange=e=>{const names=[...new Set(projectRows.map(x=>x.project))];if(names.includes(e.target.value)){project=e.target.value;spec='all';render()}else{toast('请选择有权限查看的项目');e.target.value=project}};const sf=document.getElementById('spec-filter');if(sf)sf.onchange=e=>{spec=e.target.value;render()};document.querySelectorAll('[data-action="open-monitor"]').forEach(x=>x.onclick=openMonitor);const vm=document.getElementById('view-monitor');if(vm)vm.onclick=openMonitor;const gf=document.getElementById('gpu-trend-filter');if(gf)gf.onchange=e=>{gpuTrend=e.target.value;render()};const st=document.getElementById('storage-trend-filter');if(st)st.onchange=e=>{storageTrend=e.target.value;render()};const apply=document.getElementById('apply-custom-range');if(apply)apply.onclick=()=>{const start=document.getElementById('custom-start').value,end=document.getElementById('custom-end').value,days=(new Date(end)-new Date(start))/86400000;if(!start||!end||start>end){toast('请选择有效的起止日期');return}if(days>90){toast('时间范围最长为 90 天');return}if(!trendData[source].dates.some(x=>x>=start&&x<=end)){toast('所选时间范围暂无趋势数据');return}customStart=start;customEnd=end;render();toast(`已应用时间范围：${start} 至 ${end}`)}}
+    document.querySelectorAll('.segment').forEach(x=>x.onclick=()=>{if(source===x.dataset.source)return;source=x.dataset.source;const trends=trendData[source];gpuTrend=Object.keys(trends.gpuModels)[0];render();toast(`已切换至${source==='private'?'私有资源':'公有资源'}`)});function toast(message){const el=document.getElementById('toast');el.querySelector('span').textContent=message;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),1900)}render();
+  </script>
+  <script>
+    let gpuDetailExpanded = false;
+    function gpuDetailSection(models) {
+      const label = source === 'public' ? '已分配 / 配额' : '已使用 / 总量';
+      return `<div class="gpu-detail"><button id="toggle-gpu-details" class="gpu-detail-toggle" type="button" aria-expanded="${gpuDetailExpanded}"><span>GPU 卡型详情 <b>${models.length}</b></span><span class="gpu-detail-arrow">${gpuDetailExpanded ? '⌃ 收起' : '⌄ 展开'}</span></button><div class="gpu-model-grid" ${gpuDetailExpanded ? '' : 'hidden'}>${models.map(item => card(item, false, label)).join('')}</div></div>`;
+    }
+    function storageOverview() {
+      const storage = resourceData.public.storage;
+      return `<section class="section-card"><div class="storage-grid">${storage.map(item => card(item, true)).join('')}</div></section>`;
+    }
+    function publicStorageTrendSection() {
+      const trends = trendData.public;
+      const index = trends.dates.map((date, i) => ({ date, i })).filter(item => item.date >= storageStart && item.date <= storageEnd).map(item => item.i);
+      const labels = index.map(i => trends.dates[i].slice(5).replace('-', '/'));
+      const clip = item => ({ unit:item.unit, used:index.map(i => item.used[i]), total:index.map(i => item.total[i]) });
+      const range = `<div class="trend-controls"><span class="trend-unit">时间范围</span><input id="storage-start" type="date" value="${storageStart}"/><span>至</span><input id="storage-end" type="date" value="${storageEnd}"/><button id="apply-storage-range" class="sort">查询</button></div>`;
+      return `<section class="section-card"><div class="card-header"><div><h3>存储资源水位趋势</h3><p>文件存储与对象存储独立展示，按“已使用 / 总量”统计。</p></div>${range}</div><div class="trend-grid">${trendPanel('文件存储使用率趋势', clip(trends.storage['文件存储']), labels)}${trendPanel('对象存储使用率趋势', clip(trends.storage['对象存储']), labels)}</div></section>`;
+    }
+    trendSection = function () {
+      const trends = trendData[source];
+      const index = trends.dates.map((date, i) => ({ date, i })).filter(item => item.date >= customStart && item.date <= customEnd).map(item => item.i);
+      const labels = index.map(i => trends.dates[i].slice(5).replace('-', '/'));
+      const clip = item => ({ unit:item.unit, used:index.map(i => item.used[i]), total:index.map(i => item.total[i]) });
+      const range = `<div class="trend-controls"><span class="trend-unit">时间范围</span><input id="custom-start" type="date" value="${customStart}"/><span>至</span><input id="custom-end" type="date" value="${customEnd}"/><button id="apply-custom-range" class="sort">查询</button></div>`;
+      const gpuOptions = Object.keys(trends.gpuModels);
+      const gpuSelector = `<select id="gpu-trend-filter" aria-label="GPU 趋势维度">${gpuOptions.map(item => `<option value="${item}" ${item===gpuTrend?'selected':''}>${item}</option>`).join('')}</select>`;
+      if (source === 'public') {
+        return `<section class="section-card"><div class="card-header"><div><h3>公有计算资源分配趋势</h3><p>纵轴按“已分配 / 配额”百分比统计；不展示内存分配趋势。</p></div>${range}</div><div class="trend-grid">${trendPanel('CPU 分配率趋势', clip(trends.cpu), labels, '', '已分配', '配额')}${trendPanel('GPU 分配率趋势', clip(trends.gpuModels[gpuTrend]), labels, gpuSelector, '已分配', '配额')}</div></section>`;
+      }
+      return `<section class="section-card"><div class="card-header"><div><h3>私有计算资源水位趋势</h3><p>纵轴统一按“已使用 / 总量”百分比统计；资源总量变化时按对应时点的实际总量计算。</p></div>${range}</div><div class="trend-grid">${trendPanel('CPU 使用率趋势', clip(trends.cpu), labels)}${trendPanel('内存使用率趋势', clip(trends.memory), labels)}${trendPanel('GPU 使用率趋势', clip(trends.gpuModels[gpuTrend]), labels, gpuSelector)}</div></section>`;
+    };
+    render = function () {
+      const data = resourceData[source];
+      const isPublic = source === 'public';
+      document.querySelectorAll('.segment').forEach(item => item.classList.toggle('active', item.dataset.source === source));
+      document.getElementById('source-switch')?.toggleAttribute('hidden', availableSources.length < 2);
+      sourceTip.innerHTML = `<span class="info">ⓘ</span><div><strong>${isPublic ? '公有资源' : '私有资源'}</strong>：${isPublic ? '计算资源按“已分配 / 配额”展示。' : '展示当前租户实际纳管的私有机器计算资源使用情况，按“已使用 / 总量”统计。'} 文件存储与对象存储在下方独立展示。</div>`;
+      const gpuModels = data.compute.filter(item => item.name.startsWith('GPU ·'));
+      const summary = [...data.compute.filter(item => item.name === 'CPU' || item.name === '内存'), gpuTotal(data.compute)];
+      const overview = `<section class="section-card"><div class="card-header"><div><h3>${data.title}</h3><p>${data.description}</p></div><span class="updated">数据更新时间：2026-08-18 10:30:00</span></div><div class="resource-grid">${summary.map(item => card(item, false, isPublic ? '已分配 / 配额' : '已使用 / 总量')).join('')}</div>${gpuDetailSection(gpuModels)}</section>`;
+      statContent.innerHTML = `${overview}${trendSection()}${source === 'private' ? privateDetails() : ''}${storageOverview()}${publicStorageTrendSection()}`;
+      bindEvents();
+    };
+    bindEvents = function () {
+      const projectFilter = document.getElementById('project-filter');
+      if (projectFilter) projectFilter.onchange = event => {
+        const projects = [...new Set(projectRows.map(item => item.project))];
+        if (projects.includes(event.target.value)) { project = event.target.value; spec = 'all'; render(); }
+        else { toast('请选择有权限查看的项目'); event.target.value = project; }
+      };
+      const specFilter = document.getElementById('spec-filter');
+      if (specFilter) specFilter.onchange = event => { spec = event.target.value; render(); };
+      const monitor = document.getElementById('view-monitor'); if (monitor) monitor.onclick = openMonitor;
+      const gpuToggle = document.getElementById('toggle-gpu-details');
+      if (gpuToggle) gpuToggle.onclick = () => { gpuDetailExpanded = !gpuDetailExpanded; render(); };
+      const gpuFilter = document.getElementById('gpu-trend-filter'); if (gpuFilter) gpuFilter.onchange = event => { gpuTrend = event.target.value; render(); };
+      const apply = document.getElementById('apply-custom-range');
+      if (apply) apply.onclick = () => {
+        const start = document.getElementById('custom-start').value, end = document.getElementById('custom-end').value, days = (new Date(end) - new Date(start)) / 86400000;
+        if (!start || !end || start > end) { toast('请选择有效的起止日期'); return; }
+        if (days > 90) { toast('时间范围最长为 90 天'); return; }
+        if (!trendData[source].dates.some(date => date >= start && date <= end)) { toast('所选时间范围暂无趋势数据'); return; }
+        customStart = start; customEnd = end; render(); toast(`已应用时间范围：${start} 至 ${end}`);
+      };
+    };
+    render();
+  </script>
+  <style>
+    .project-picker{position:relative;width:230px}.project-picker .project-input{width:100%;padding-right:38px}.project-picker-toggle{position:absolute;top:1px;right:1px;width:36px;height:36px;border:0;color:#67758c;background:transparent;font-size:16px}.project-option-panel{position:absolute;z-index:8;top:44px;left:0;width:100%;max-height:236px;overflow-y:auto;padding:5px;border:1px solid #dce3ee;border-radius:6px;background:#fff;box-shadow:0 8px 22px rgba(31,48,80,.14)}.project-option-panel[hidden]{display:none}.project-option{display:block;width:100%;height:34px;padding:0 10px;border:0;border-radius:4px;color:#3f4f68;background:#fff;text-align:left}.project-option:hover,.project-option.active{color:#2f6bff;background:#edf3ff}.domain-control-header{justify-content:flex-end;padding-bottom:0}.domain-meta{text-align:right}.domain-meta p{margin:0 0 7px;color:#8a96a9;font-size:13px}.scope-control{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 12px;border:1px solid #bfd3ff;border-radius:8px;background:#f5f8ff}.scope-control-label{color:#315fbd;font-size:13px;font-weight:700;white-space:nowrap}.scope-control .project-picker{width:260px}.scope-control .project-input{height:36px;border-color:#a9c4ff;background:#fff;font-weight:600}.scope-control .project-option:first-child{margin-bottom:4px;border-bottom:1px solid #e8eefb}.domain-subsection>.card-header>.tools{margin-left:auto;justify-content:flex-end}
+  </style>
+  <script>
+    privateDetails = function () {
+      const projects = [...new Set(projectRows.map(item => item.project))];
+      const specs = [...new Set(projectRows.map(item => item.spec))];
+      const order = ['CPU','内存','NVIDIA A800 80G','NVIDIA L40S','NVIDIA H20'];
+      const rows = projectRows.filter(item => item.project === project && (spec === 'all' || item.spec === spec)).sort((a,b) => order.indexOf(a.spec) - order.indexOf(b.spec));
+      const tableRows = rows.map(item => { const rate = percent(item.used,item.total); return `<tr><td class="project">${item.project}</td><td><span class="spec-tag">${item.spec}</span></td><td>${format(item.used)} ${item.unit}</td><td>${format(item.total)} ${item.unit}</td><td><div class="bar-cell"><div class="mini-meter"><i style="width:${rate}%"></i></div><span class="rate">${rate}%</span></div></td></tr>`; }).join('') || '<tr><td colspan="5"><div class="empty">暂无匹配资源</div></td></tr>';
+      return `<section class="section-card"><div class="card-header"><div><h3>项目资源使用明细</h3><p>仅展示当前用户有权限查看的项目；默认按 CPU、内存、GPU 卡型排序。</p></div><div class="tools"><div class="project-picker"><input id="project-filter" class="project-input" value="${project}" placeholder="搜索或选择项目" autocomplete="off" aria-label="搜索项目"/><button id="toggle-project-picker" class="project-picker-toggle" type="button" aria-label="展开项目列表">⌄</button><div id="project-option-panel" class="project-option-panel" hidden>${projects.map(item => `<button class="project-option ${item===project?'active':''}" type="button" data-project="${item}">${item}</button>`).join('')}</div></div><select id="spec-filter" aria-label="资源规格"><option value="all">全部资源规格</option>${specs.map(item => `<option value="${item}" ${item===spec?'selected':''}>${item}</option>`).join('')}</select><button id="view-monitor" class="sort">查看资源监控详情</button></div></div><div class="table-wrap"><table><thead><tr><th>项目</th><th>资源规格</th><th>已使用</th><th>总量</th><th>使用率</th></tr></thead><tbody>${tableRows}</tbody></table></div></section>`;
+    };
+    bindEvents = function () {
+      const projectFilter = document.getElementById('project-filter');
+      const projectPanel = document.getElementById('project-option-panel');
+      const setProject = value => { project = value; spec = 'all'; render(); };
+      if (projectFilter) {
+        projectFilter.onfocus = () => { projectPanel.hidden = false; };
+        projectFilter.oninput = () => {
+          const keyword = projectFilter.value.trim().toLowerCase();
+          projectPanel.hidden = false;
+          projectPanel.querySelectorAll('[data-project]').forEach(item => { item.hidden = !item.dataset.project.toLowerCase().includes(keyword); });
+        };
+        projectFilter.onchange = () => {
+          const names = [...new Set(projectRows.map(item => item.project))];
+          if (names.includes(projectFilter.value)) setProject(projectFilter.value);
+        };
+      }
+      const projectToggle = document.getElementById('toggle-project-picker');
+      if (projectToggle) projectToggle.onclick = () => { projectPanel.hidden = !projectPanel.hidden; if (!projectPanel.hidden) projectFilter.focus(); };
+      if (projectPanel) projectPanel.querySelectorAll('[data-project]').forEach(item => item.onclick = () => setProject(item.dataset.project));
+      const specFilter = document.getElementById('spec-filter'); if (specFilter) specFilter.onchange = event => { spec = event.target.value; render(); };
+      const monitor = document.getElementById('view-monitor'); if (monitor) monitor.onclick = openMonitor;
+      const gpuToggle = document.getElementById('toggle-gpu-details'); if (gpuToggle) gpuToggle.onclick = () => { gpuDetailExpanded = !gpuDetailExpanded; render(); };
+      const gpuFilter = document.getElementById('gpu-trend-filter'); if (gpuFilter) gpuFilter.onchange = event => { gpuTrend = event.target.value; render(); };
+      const apply = document.getElementById('apply-custom-range');
+      if (apply) apply.onclick = () => {
+        const start = document.getElementById('custom-start').value, end = document.getElementById('custom-end').value, days = (new Date(end) - new Date(start)) / 86400000;
+        if (!start || !end || start > end) { toast('请选择有效的起止日期'); return; }
+        if (days > 90) { toast('时间范围最长为 90 天'); return; }
+        if (!trendData[source].dates.some(date => date >= start && date <= end)) { toast('所选时间范围暂无趋势数据'); return; }
+        customStart = start; customEnd = end; render(); toast(`已应用时间范围：${start} 至 ${end}`);
+      };
+    };
+    render();
+  </script>
+  <script>
+    function asDomainSubsection(html) {
+      return html.replace('<section class="section-card">', '<div class="domain-subsection">').replace(/<\/section>$/, '</div>');
+    }
+    const tenantScope = '__tenant__';
+    const isTenantScope = () => project === tenantScope;
+    const scopeName = () => isTenantScope() ? '租户全局' : project;
+    function projectCompute(projectName) {
+      if (projectName === tenantScope) return resourceData.private.compute;
+      return projectRows.filter(item => item.project === projectName).map(item => ({
+        name: item.spec === 'CPU' || item.spec === '内存' ? item.spec : `GPU · ${item.spec}`,
+        detail: item.spec === 'CPU' ? '核数' : item.spec === '内存' ? 'GiB' : '卡数',
+        unit: item.unit,
+        total: item.total,
+        used: item.used
+      }));
+    }
+    function projectTrendData(projectName) {
+      if (projectName === tenantScope) return trendData.private;
+      const items = projectCompute(projectName);
+      const dates = trendData.private.dates;
+      const factors = [.82,.86,.9,.94,.97,.99,1];
+      const makeSeries = item => series(item.unit, factors.map(factor => Math.round(item.used * factor)), dates.map(() => item.total));
+      const cpu = items.find(item => item.name === 'CPU') || {unit:'核',used:0,total:0};
+      const memory = items.find(item => item.name === '内存') || {unit:'GiB',used:0,total:0};
+      const gpuItems = items.filter(item => item.name.startsWith('GPU ·'));
+      const gpuModels = {'GPU 总卡数':series('卡', factors.map(factor => Math.round(gpuItems.reduce((sum,item) => sum + item.used,0) * factor)), dates.map(() => gpuItems.reduce((sum,item) => sum + item.total,0)))};
+      gpuItems.forEach(item => { gpuModels[item.name.replace('GPU · ','')] = makeSeries(item); });
+      return {dates,cpu:makeSeries(cpu),memory:makeSeries(memory),gpuModels};
+    }
+    privateDetails = function () {
+      const specs = [...new Set(projectRows.filter(item => item.project === project).map(item => item.spec))];
+      const order = ['CPU','内存','NVIDIA A800 80G','NVIDIA L40S','NVIDIA H20'];
+      const rows = projectRows.filter(item => item.project === project && (spec === 'all' || item.spec === spec)).sort((a,b) => order.indexOf(a.spec) - order.indexOf(b.spec));
+      const tableRows = rows.map(item => { const rate = percent(item.used,item.total); return `<tr><td class="project">${item.project}</td><td><span class="spec-tag">${item.spec}</span></td><td>${format(item.used)} ${item.unit}</td><td>${format(item.total)} ${item.unit}</td><td><div class="bar-cell"><div class="mini-meter"><i style="width:${rate}%"></i></div><span class="rate">${rate}%</span></div></td></tr>`; }).join('') || '<tr><td colspan="5"><div class="empty">暂无匹配资源</div></td></tr>';
+      return `<section class="section-card"><div class="card-header"><div><h3>项目资源使用明细</h3><p>当前项目：${project}；默认按 CPU、内存、GPU 卡型排序。</p></div><div class="tools"><select id="spec-filter" aria-label="资源规格"><option value="all">全部资源规格</option>${specs.map(item => `<option value="${item}" ${item===spec?'selected':''}>${item}</option>`).join('')}</select><button id="view-monitor" class="sort">查看资源监控详情</button></div></div><div class="table-wrap"><table><thead><tr><th>项目</th><th>资源规格</th><th>已使用</th><th>总量</th><th>使用率</th></tr></thead><tbody>${tableRows}</tbody></table></div></section>`;
+    };
+    const baseTrendSection = trendSection;
+    trendSection = function () {
+      if (source !== 'private') return baseTrendSection();
+      const trends = projectTrendData(project);
+      const index = trends.dates.map((date, i) => ({ date, i })).filter(item => item.date >= customStart && item.date <= customEnd).map(item => item.i);
+      const labels = index.map(i => trends.dates[i].slice(5).replace('-', '/'));
+      const clip = item => ({unit:item.unit,used:index.map(i => item.used[i]),total:index.map(i => item.total[i])});
+      const range = `<div class="trend-controls"><span class="trend-unit">时间范围</span><input id="custom-start" type="date" value="${customStart}"/><span>至</span><input id="custom-end" type="date" value="${customEnd}"/><button id="apply-custom-range" class="sort">查询</button></div>`;
+      const gpuOptions = Object.keys(trends.gpuModels);
+      if (!gpuOptions.includes(gpuTrend)) gpuTrend = 'GPU 总卡数';
+      const gpuSelector = `<select id="gpu-trend-filter" aria-label="GPU 趋势维度">${gpuOptions.map(item => `<option value="${item}" ${item===gpuTrend?'selected':''}>${item}</option>`).join('')}</select>`;
+      const trendScopeTitle = isTenantScope() ? '租户全局计算资源水位趋势' : '项目计算资源水位趋势';
+      const trendScopeDescription = isTenantScope() ? '纵轴按“已使用 / 总量”百分比统计。' : `当前项目：${project}；纵轴按“已使用 / 总量”百分比统计。`;
+      return `<section class="section-card"><div class="card-header"><div><h3>${trendScopeTitle}</h3><p>${trendScopeDescription}</p></div>${range}</div><div class="trend-grid">${trendPanel('CPU 使用率趋势',clip(trends.cpu),labels)}${trendPanel('内存使用率趋势',clip(trends.memory),labels)}${trendPanel('GPU 使用率趋势',clip(trends.gpuModels[gpuTrend]),labels,gpuSelector)}</div></section>`;
+    };
+    render = function () {
+      const data = resourceData[source];
+      const isPublic = source === 'public';
+      document.querySelectorAll('.segment').forEach(item => item.classList.toggle('active', item.dataset.source === source));
+      sourceTip.hidden = true;
+      const computeData = isPublic ? data.compute : projectCompute(project);
+      const gpuModels = computeData.filter(item => item.name.startsWith('GPU ·'));
+      const summary = [...computeData.filter(item => item.name === 'CPU' || item.name === '内存'), gpuTotal(computeData)];
+      const projects = [...new Set(projectRows.map(item => item.project))];
+      const privateDescription = isTenantScope() ? '当前展示租户全局计算资源使用情况；可切换至具体项目查看。' : `当前展示项目 ${project} 的计算资源使用情况。`;
+      const scopePicker = `<div class="scope-control"><span class="scope-control-label">统计范围</span><div class="project-picker"><input id="project-filter" class="project-input" value="${scopeName()}" placeholder="搜索或选择项目" autocomplete="off" aria-label="搜索或选择项目"/><button id="toggle-project-picker" class="project-picker-toggle" type="button" aria-label="展开项目列表">⌄</button><div id="project-option-panel" class="project-option-panel" hidden><button class="project-option ${isTenantScope()?'active':''}" type="button" data-project="${tenantScope}">租户全局</button>${projects.map(item => `<button class="project-option ${item===project?'active':''}" type="button" data-project="${item}">${item}</button>`).join('')}</div></div></div>`;
+      const monitorButton = `<button id="view-monitor" class="sort">查看资源监控详情</button>`;
+      const computeOverview = `<div class="domain-subsection"><div class="card-header"><div><h3>${data.title}</h3><p>${isPublic ? data.description : privateDescription}</p></div><div class="tools">${isPublic ? '' : scopePicker}${isPublic ? '' : monitorButton}</div></div><div class="resource-grid">${summary.map(item => card(item, false, isPublic ? '已分配 / 配额' : '已使用 / 总量')).join('')}</div>${gpuDetailSection(gpuModels)}</div>`;
+      const computeBlock = `<section class="section-card domain-card"><div class="domain-header domain-control-header"><div id="source-switch" class="segmented" aria-label="计算资源来源"><button class="segment ${source==='private'?'active':''}" data-source="private">私有资源</button><button class="segment ${source==='public'?'active':''}" data-source="public">公有资源</button></div></div>${computeOverview}${asDomainSubsection(trendSection())}</section>`;
+      const storageBlock = `<section class="section-card domain-card"><div class="domain-header"><div><h3>存储资源</h3></div><div class="domain-meta"><p>文件存储与对象存储按租户维度独立展示，不受计算资源来源切换影响。</p></div></div>${asDomainSubsection(storageOverview())}${asDomainSubsection(publicStorageTrendSection())}</section>`;
+      statContent.innerHTML = `${computeBlock}${storageBlock}`;
+      bindEvents();
+    };
+    const baseOpenMonitor = openMonitor;
+    openMonitor = function () {
+      if (!isTenantScope()) return baseOpenMonitor();
+      const rows = Object.values(physicalResources).flat();
+      document.getElementById('overview-page').hidden = true;
+      const page = document.getElementById('monitor-page');
+      page.hidden = false;
+      page.innerHTML = `<div class="detail-page-head"><button id="back-overview" class="back" aria-label="返回概览">‹</button><h1>租户全局资源监控详情</h1></div><div class="monitor-note"><span class="info">ⓘ</span><span>查看租户全局的机器与任务资源使用情况；使用率反映实际资源利用水平。</span></div><div class="monitor-tabs"><button class="monitor-tab ${monitorTab==='machines'?'active':''}" data-tab="machines">机器资源</button><button class="monitor-tab ${monitorTab==='tasks'?'active':''}" data-tab="tasks">任务资源</button></div><section class="section-card"><div class="physical-toolbar"><div><h3 style="margin:0">${monitorTab==='machines'?'机器资源列表':'任务资源列表'}</h3><p style="margin:5px 0 0;color:#8a96a9">${monitorTab==='machines'?'节点维度展示资源已使用、总量及使用率。':'任务/实例维度展示申请资源与实际使用率。'}</p></div></div>${monitorTab==='machines'?machineTable(rows):taskTable()}</section>`;
+      document.getElementById('back-overview').onclick = () => { page.hidden = true; document.getElementById('overview-page').hidden = false; render(); };
+      page.querySelectorAll('[data-tab]').forEach(item => item.onclick = () => { monitorTab = item.dataset.tab; openMonitor(); });
+    };
+    const baseBindEvents = bindEvents;
+    bindEvents = function () {
+      baseBindEvents();
+      const projectFilter = document.getElementById('project-filter');
+      const projectPanel = document.getElementById('project-option-panel');
+      const selectScope = value => {
+        const names = [tenantScope, ...new Set(projectRows.map(item => item.project))];
+        if (!names.includes(value)) { toast('请选择可查看的租户全局或项目'); projectFilter.value = scopeName(); return; }
+        project = value;
+        spec = 'all';
+        gpuTrend = 'GPU 总卡数';
+        render();
+        toast(`已切换至${scopeName()}`);
+      };
+      if (projectFilter && projectPanel) {
+        projectFilter.onfocus = () => { projectPanel.hidden = false; };
+        projectFilter.oninput = () => {
+          const keyword = projectFilter.value.trim().toLowerCase();
+          projectPanel.hidden = false;
+          projectPanel.querySelectorAll('[data-project]').forEach(item => { item.hidden = !item.textContent.toLowerCase().includes(keyword); });
+        };
+        projectFilter.onchange = () => selectScope(projectFilter.value === '租户全局' ? tenantScope : projectFilter.value);
+        const projectToggle = document.getElementById('toggle-project-picker');
+        if (projectToggle) projectToggle.onclick = () => { projectPanel.hidden = !projectPanel.hidden; if (!projectPanel.hidden) projectFilter.focus(); };
+        projectPanel.querySelectorAll('[data-project]').forEach(item => item.onclick = () => selectScope(item.dataset.project));
+      }
+      document.querySelectorAll('.segment').forEach(button => button.onclick = () => {
+        if (source === button.dataset.source) return;
+        source = button.dataset.source;
+        gpuTrend = Object.keys(trendData[source].gpuModels)[0];
+        render();
+        toast(`已切换至${source === 'private' ? '私有资源' : '公有资源'}`);
+      });
+      const storageApply = document.getElementById('apply-storage-range');
+      if (storageApply) storageApply.onclick = () => {
+        const start = document.getElementById('storage-start').value;
+        const end = document.getElementById('storage-end').value;
+        const days = (new Date(end) - new Date(start)) / 86400000;
+        if (!start || !end || start > end) { toast('请选择有效的存储趋势起止日期'); return; }
+        if (days > 90) { toast('时间范围最长为 90 天'); return; }
+        if (!trendData.public.dates.some(date => date >= start && date <= end)) { toast('所选时间范围暂无存储趋势数据'); return; }
+        storageStart = start;
+        storageEnd = end;
+        render();
+        toast(`已应用存储趋势时间范围：${start} 至 ${end}`);
+      };
+    };
+    render();
+  </script>
+</body>
+</html>

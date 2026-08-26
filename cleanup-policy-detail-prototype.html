@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>自助清理策略详情原型</title>
+  <style>
+    :root {
+      --blue: #2f6bff;
+      --blue-weak: #edf3ff;
+      --text: #17233a;
+      --text-secondary: #62708a;
+      --border: #e4e8f0;
+      --page: #f4f7fd;
+      --card: #ffffff;
+      --danger: #f04438;
+      --success: #14a868;
+      --warning: #dc8c00;
+      --shadow: 0 12px 32px rgba(30, 50, 90, .14);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 1080px;
+      color: var(--text);
+      background: var(--page);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid rgba(47,107,255,.28); outline-offset: 2px; }
+
+    .topbar {
+      height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      border-bottom: 1px solid var(--border);
+      background: #f7f9ff;
+    }
+    .page-title { display: flex; align-items: center; gap: 18px; min-width: 0; }
+    .back-btn, .icon-btn {
+      display: inline-grid; place-items: center; width: 36px; height: 36px;
+      border: 0; border-radius: 6px; color: #70809a; background: transparent; font-size: 28px;
+    }
+    .back-btn:hover, .icon-btn:hover { background: #eaf0fd; color: var(--blue); }
+    h1 { margin: 0; font-size: 27px; line-height: 1.2; letter-spacing: -.4px; }
+    .title-id { color: #8a96aa; font-weight: 400; font-size: 14px; }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .check-label { display: flex; align-items: center; gap: 8px; color: #36425b; }
+    .check-label input { accent-color: var(--blue); width: 18px; height: 18px; }
+    .detail-actions-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+
+    .shell { padding: 0 17px 42px; }
+    .nav-tabs {
+      display: flex; align-items: end; gap: 34px; height: 95px; overflow: hidden;
+      border-bottom: 1px solid var(--border); padding: 0 28px; background: #f7f9ff;
+    }
+    .nav-item { height: 95px; display: flex; align-items: center; position: relative; color: #52617a; font-size: 18px; white-space: nowrap; }
+    .nav-item.active { color: var(--blue); font-weight: 600; }
+    .nav-item.active::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--blue); }
+
+    .content-card { background: var(--card); border-radius: 7px; margin-top: 34px; padding: 30px 27px; min-height: 480px; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+    .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 12px; }
+    .btn { border: 1px solid transparent; height: 40px; padding: 0 17px; border-radius: 6px; background: #f3f5f9; color: #34415a; font-weight: 600; }
+    .btn:hover { filter: brightness(.98); }
+    .btn.primary { color: #fff; background: var(--blue); box-shadow: 0 3px 8px rgba(47,107,255,.2); }
+    .btn.ghost { background: #fff; border-color: var(--border); }
+    .btn.danger { color: var(--danger); border-color: var(--danger); background: #fff; }
+    .btn.small { height: 32px; padding: 0 12px; font-size: 13px; }
+    .btn:disabled { cursor: not-allowed; opacity: .5; }
+    .search-box { display: flex; align-items: center; width: 330px; height: 40px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+    .search-box input { flex: 1; min-width: 0; border: 0; outline: 0; padding: 0 12px; color: var(--text); background: transparent; }
+    .search-icon { width: 42px; color: #53627b; font-size: 19px; text-align: center; }
+    .filter-select { height: 40px; border: 1px solid var(--border); border-radius: 6px; padding: 0 10px; color: #41506a; background: #fff; }
+
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 5px; }
+    table { border-collapse: collapse; width: 100%; min-width: 1160px; background: #fff; }
+    th { height: 68px; padding: 0 28px; background: #f5f6f8; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; font-size: 16px; }
+    td { min-height: 86px; padding: 17px 28px; border-bottom: 1px solid var(--border); vertical-align: middle; color: #263650; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fbfcff; }
+    .name-link, .text-link { color: var(--blue); border: 0; background: none; padding: 0; font-weight: 600; text-align: left; }
+    .text-link:hover { text-decoration: underline; }
+    .subtext { margin-top: 4px; color: #8b97aa; font-size: 13px; }
+    .tag { display: inline-flex; align-items: center; min-height: 27px; padding: 2px 9px; border-radius: 4px; color: #51617a; background: #f0f3f7; font-size: 13px; }
+    .tag.blue { background: var(--blue-weak); color: var(--blue); }
+    .tag.green { background: #e9f8f0; color: #138a57; }
+    .tag.orange { background: #fff4df; color: #b87300; }
+    .actions-inline { display: flex; align-items: center; gap: 18px; }
+    .pagination { display: flex; align-items: center; justify-content: flex-end; gap: 16px; padding-top: 26px; color: #39465f; }
+    .page-current { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 7px; color: var(--blue); background: #eaf2ff; font-size: 16px; }
+    .page-arrow { color: #a7b1c1; font-size: 25px; }
+    .empty { display: grid; place-items: center; min-height: 270px; color: #8793a6; text-align: center; }
+    .empty .empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+    .detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 23px; border-bottom: 1px solid var(--border); }
+    .crumb { color: #8995a8; margin-bottom: 8px; }
+    .detail-head h2 { margin: 0; font-size: 22px; }
+    .detail-meta { margin-top: 8px; color: #738198; }
+    .detail-tabs { display: flex; gap: 31px; height: 61px; border-bottom: 1px solid var(--border); }
+    .detail-tab { position: relative; border: 0; background: transparent; padding: 0 3px; color: #66758d; font-size: 16px; }
+    .detail-tab.active { color: var(--blue); font-weight: 600; }
+    .detail-tab.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: var(--blue); }
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin: 25px 0 16px; }
+    .section-title h3 { margin: 0; font-size: 17px; }
+    .detail-form { max-width: 1120px; padding: 3px 0 8px; }
+    .detail-form-row { display: grid; grid-template-columns: 165px minmax(0, 1fr); align-items: start; gap: 18px; min-height: 62px; padding: 11px 0; }
+    .detail-form-label { padding-top: 8px; color: #56657d; font-size: 16px; }
+    .detail-form-value { min-height: 40px; display: flex; align-items: center; color: #22324a; font-size: 16px; }
+    .org-path { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .path-box { min-width: 198px; height: 40px; display: inline-flex; align-items: center; justify-content: space-between; padding: 0 13px; border: 1px solid var(--border); border-radius: 5px; background: #f8f9fb; }
+    .metric-panel { width: min(100%, 850px); min-height: 104px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 13px; padding: 18px 28px; border-radius: 6px; background: #f6f7f9; }
+    .metric-condition { display: inline-flex; align-items: center; gap: 14px; }
+    .metric-select, .metric-input { height: 38px; display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 5px; background: #fff; }
+    .metric-select { min-width: 215px; justify-content: space-between; padding: 0 12px; }
+    .metric-input { min-width: 170px; justify-content: space-between; padding-left: 12px; }
+    .metric-input b { height: 36px; display: grid; place-items: center; min-width: 42px; border-left: 1px solid var(--border); color: #52617a; font-weight: 500; }
+    .inline-rule { display: flex; align-items: center; gap: 15px; }
+    .number-box { width: 180px; height: 40px; display: inline-flex; align-items: center; padding: 0 12px; border: 1px solid var(--border); border-radius: 5px; background: #fff; }
+    .detail-extra { display: grid; grid-template-columns: minmax(260px, 360px); gap: 12px; margin-top: 15px; padding: 16px 20px; border: 1px solid var(--border); border-radius: 6px; background: #fbfcff; }
+    .detail-extra .desc-label { margin-bottom: 4px; }
+    .inline-edit-control { height: 40px; min-width: 360px; padding: 0 12px; border: 1px solid #cfd6e2; border-radius: 5px; color: var(--text); background: #fff; font-size: 16px; }
+    .inline-edit-control.compact { min-width: 180px; width: 180px; }
+    .metric-select select, .metric-input input { width: 100%; height: 100%; border: 0; outline: 0; padding: 0 12px; color: var(--text); background: transparent; font: inherit; }
+    .metric-input input { min-width: 110px; }
+    .detail-edit-footer { position: fixed; z-index: 12; right: 0; bottom: 0; left: 0; display: flex; justify-content: flex-end; gap: 12px; padding: 22px 48px; border-top: 1px solid var(--border); background: #fff; box-shadow: 0 -4px 16px rgba(28, 45, 78, .08); }
+    .editing-card { padding-bottom: 106px; }
+    .desc-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .desc-item { min-height: 87px; padding: 18px 21px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .desc-item:nth-child(3n) { border-right: 0; }
+    .desc-item:nth-last-child(-n+3) { border-bottom: 0; }
+    .desc-label { margin-bottom: 7px; color: #7d899d; }
+    .desc-value { color: #263650; font-weight: 500; word-break: break-word; }
+    .switch { display: inline-flex; vertical-align: middle; position: relative; width: 40px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; border-radius: 18px; background: #c7cfdb; transition: .2s; }
+    .slider::before { content:""; position: absolute; width: 18px; height: 18px; top: 2px; left: 2px; border-radius: 50%; background: #fff; transition: .2s; }
+    .switch input:checked + .slider { background: var(--blue); }
+    .switch input:checked + .slider::before { transform: translateX(18px); }
+    .metric-row { display: flex; flex-wrap: wrap; gap: 7px; }
+    .history-note { display: flex; gap: 10px; align-items: center; margin: 18px 0; padding: 11px 14px; border: 1px solid #d6e5ff; border-radius: 6px; color: #53709a; background: #f5f9ff; }
+
+    .overlay { position: fixed; inset: 0; display: none; background: rgba(22, 34, 57, .48); z-index: 20; }
+    .overlay.show { display: block; }
+    .drawer { position: fixed; z-index: 21; right: 0; top: 0; display: flex; flex-direction: column; width: min(84vw, 960px); height: 100vh; transform: translateX(102%); background: #fff; box-shadow: var(--shadow); transition: transform .24s ease; }
+    .drawer.show { transform: translateX(0); }
+    .drawer-header { display: flex; align-items: center; justify-content: space-between; height: 72px; padding: 0 30px; border-bottom: 1px solid var(--border); }
+    .drawer-header h2 { margin: 0; font-size: 21px; }
+    .drawer-body { flex: 1; overflow: auto; padding: 26px 40px; }
+    .drawer-info { display: flex; align-items: center; gap: 12px; padding-bottom: 19px; border-bottom: 1px solid var(--border); color: #7d899d; }
+    .drawer-info strong { color: var(--text); }
+    .instance-name-link { padding: 0; border: 0; color: var(--blue); background: transparent; font-size: inherit; font-weight: 600; cursor: pointer; }
+    .instance-name-link:hover { text-decoration: underline; }
+    .drawer-tabs { display: flex; gap: 44px; height: 63px; border-bottom: 1px solid var(--border); }
+    .drawer-tab { border: 0; padding: 0; position: relative; color: #64728b; background: transparent; font-size: 16px; }
+    .drawer-tab.active { color: var(--blue); font-weight: 600; }
+    .drawer-tab.active::after { content:""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: var(--blue); }
+    .drawer-footer { display: flex; justify-content: flex-end; padding: 22px 30px; border-top: 1px solid var(--border); }
+    .instance-page { min-height: 100vh; background: #f4f7fc; }
+    .instance-topbar { display: flex; align-items: center; height: 70px; padding: 0 32px; border-bottom: 1px solid var(--border); background: #fff; color: #344057; }
+    .instance-brand { color: var(--blue); font-size: 20px; font-weight: 700; }
+    .instance-brand span { margin-left: 10px; color: var(--text); }
+    .instance-layout { display: flex; min-height: calc(100vh - 70px); }
+    .instance-sidebar { width: 220px; padding: 24px 14px; border-right: 1px solid var(--border); background: #f8faff; color: #61708a; }
+    .instance-sidebar .side-title { margin: 0 0 14px; padding: 0 14px; font-size: 14px; color: #8a96a8; }
+    .instance-sidebar .side-item { display: block; padding: 13px 14px; border-radius: 5px; font-size: 15px; }
+    .instance-sidebar .side-item.active { color: var(--blue); background: #e9f1ff; font-weight: 600; }
+    .instance-main { flex: 1; min-width: 0; padding: 30px 34px 60px; }
+    .instance-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .instance-title-row h1 { margin: 0; font-size: 30px; }
+    .instance-crumb { margin-bottom: 12px; color: #7c899d; font-size: 14px; }
+    .instance-tabs { display: flex; gap: 36px; height: 52px; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+    .instance-tabs span { position: relative; display: flex; align-items: center; color: #59677e; }
+    .instance-tabs span.active { color: var(--blue); font-weight: 600; }
+    .instance-tabs span.active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 3px; background: var(--blue); content: ''; }
+    .instance-info-card { margin-bottom: 20px; padding: 28px 30px; border-radius: 7px; background: #fff; }
+    .instance-info-card h2 { margin: 0 0 24px; font-size: 19px; }
+    .instance-kv { display: grid; grid-template-columns: repeat(3, minmax(190px, 1fr)); gap: 25px 42px; }
+    .instance-kv-item label { display: block; margin-bottom: 8px; color: #8995a8; font-size: 14px; }
+    .instance-kv-item div { color: var(--text); font-size: 16px; }
+    .status-running, .status-closed { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 4px; font-size: 14px; }
+    .status-running { color: #1b9b55; background: #e7f9ee; }
+    .status-closed { color: #a56a00; background: #fff3d8; }
+    @media (max-width: 900px) { .instance-sidebar { display: none; } .instance-kv { grid-template-columns: repeat(2, minmax(180px, 1fr)); } }
+    .modal { position: fixed; z-index: 22; top: 50%; left: 50%; display: none; width: min(90vw, 520px); max-height: 86vh; overflow: auto; transform: translate(-50%, -50%); border-radius: 9px; background: #fff; box-shadow: var(--shadow); }
+    .modal.show { display: block; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 22px 26px 17px; border-bottom: 1px solid var(--border); }
+    .modal-header h2 { margin: 0; font-size: 19px; }
+    .modal-body { padding: 24px 26px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 0 26px 25px; }
+    .form-field { margin-bottom: 19px; }
+    .form-field label { display: block; margin-bottom: 7px; color: #506079; font-weight: 600; }
+    .field-control { width: 100%; height: 39px; padding: 0 11px; border: 1px solid var(--border); border-radius: 5px; color: var(--text); background: #fff; }
+    .confirm-copy { margin: 0; color: #55637a; font-size: 15px; }
+    .toast { position: fixed; z-index: 50; top: 24px; left: 50%; display: flex; align-items: center; gap: 9px; padding: 11px 17px; transform: translate(-50%, -100px); border-radius: 7px; color: #fff; background: #263650; box-shadow: var(--shadow); opacity: 0; transition: all .25s ease; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    .toast.success { background: #14855a; }
+    .toast.warning { background: #b86e00; }
+
+    @media (max-width: 1240px) {
+      .nav-tabs { gap: 24px; padding: 0 18px; }
+      .nav-item { font-size: 16px; }
+      .desc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .desc-item:nth-child(3n) { border-right: 1px solid var(--border); }
+      .desc-item:nth-child(2n) { border-right: 0; }
+      .desc-item:nth-last-child(-n+3) { border-bottom: 1px solid var(--border); }
+      .desc-item:nth-last-child(-n+2) { border-bottom: 0; }
+      .detail-form { max-width: 920px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="overlay" class="overlay" aria-hidden="true"></div>
+  <section id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true"></section>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const policies = [
+      {
+        id: '6a7eb12acdf6ffe3ef7ae4fa1', name: 'lusy', org: 'x86test > x86test-infra > myytest',
+        scope: 'workspace', metric: 'GPU ≤ 1%', metricName: 'GPU', metricValue: 1, idle: 10, method: '仅通知', creator: 'e8ce5b8a63f5df7d2adbe8418',
+        notifyMethod: '飞书通知', notifyUrl: 'https://open.feishu.cn/open-apis/bot/v2/hook/6b7c1f23', createdAt: '2026/08/12 16:42:18', updatedAt: '2026/08/13 12:15:52', enabled: true
+      },
+      {
+        id: 'b46de0198c51a3220e9f84d3', name: 'gpu-autoclean', org: 'x86test > x86test-infra > myytest',
+        scope: 'rjob', metric: 'GPU ≤ 3%', metricName: 'GPU', metricValue: 3, idle: 24, method: '关闭', creator: '58dd91d2fb0bb76c911e921a',
+        notifyMethod: '飞书通知', notifyUrl: 'https://open.feishu.cn/open-apis/bot/v2/hook/ab71dd0e', createdAt: '2026/08/11 14:20:03', updatedAt: '2026/08/13 11:45:51', enabled: false
+      }
+    ];
+    let policy = policies[0];
+    const auditEvents = [
+      { id:'e-001', policyId:'6a7eb12acdf6ffe3ef7ae4fa1', trigger:'2026/08/13 12:15:52', method:'仅通知', resource:'自定义任务', org:'x86test-infra > myytest', creator:policies[0].creator, instances:[
+        {type:'自定义任务', name:'j-1786519244-7628-64rdn', id:'j-1786519244-7628-64rdn', creator:'lizl'},
+        {type:'自定义任务', name:'j-1786519258-80aa-67mlt', id:'j-1786519258-80aa-67mlt', creator:'lizl'},
+        {type:'自定义任务', name:'j-1786519281-316b-v9kpt', id:'j-1786519281-316b-v9kpt', creator:'zhangsan'},
+        {type:'自定义任务', name:'j-1786519314-182d-q6mxf', id:'j-1786519314-182d-q6mxf', creator:'zhangsan'},
+        {type:'自定义任务', name:'j-1786519357-703e-a4nwb', id:'j-1786519357-703e-a4nwb', creator:'lisi'}
+      ]},
+      { id:'e-002', policyId:'b46de0198c51a3220e9f84d3', trigger:'2026/08/13 12:05:52', method:'关闭', resource:'rlaunch', org:'x86test-infra > myytest', creator:policies[1].creator, instances:[
+        {type:'rlaunch', name:'rlaunch-gpu-worker-02', id:'rw-1786519202-459d', creator:'wangwu'},
+        {type:'rlaunch', name:'rlaunch-gpu-worker-03', id:'rw-1786519236-601c', creator:'wangwu'}
+      ]},
+      { id:'e-003', policyId:'6a7eb12acdf6ffe3ef7ae4fa1', trigger:'2026/08/13 11:55:51', method:'仅通知', resource:'开发机', org:'x86test-infra > myytest', creator:policies[0].creator, instances:[
+        {type:'开发机', name:'dev-gpu-a100-01', id:'i-1786519258-a100-01', creator:'hanmeimei'}
+      ]},
+      { id:'e-004', policyId:'b46de0198c51a3220e9f84d3', trigger:'2026/08/13 11:45:51', method:'关闭', resource:'自定义任务', org:'x86test-infra > myytest', creator:policies[1].creator, instances:[
+        {type:'自定义任务', name:'j-1786519107-4555-mp3cz', id:'j-1786519107-4555-mp3cz', creator:'zhangsan'},
+        {type:'自定义任务', name:'j-1786519120-458e-s9cxx', id:'j-1786519120-458e-s9cxx', creator:'zhangsan'}
+      ]},
+      { id:'e-005', policyId:'6a7eb12acdf6ffe3ef7ae4fa1', trigger:'2026/08/13 11:35:50', method:'仅通知', resource:'rlaunch', org:'x86test-infra > myytest', creator:policies[0].creator, instances:[
+        {type:'rlaunch', name:'rlaunch-gpu-worker-02', id:'rw-1786519202-459d', creator:'wangwu'}
+      ]},
+      { id:'e-006', policyId:'b46de0198c51a3220e9f84d3', trigger:'2026/08/13 11:25:50', method:'关闭', resource:'自定义任务', org:'x86test-infra > myytest', creator:policies[1].creator, instances:[
+        {type:'自定义任务', name:'j-1786518942-2c0d-9ptb', id:'j-1786518942-2c0d-9ptb', creator:'lizl'}
+      ]},
+      { id:'e-007', policyId:'6a7eb12acdf6ffe3ef7ae4fa1', trigger:'2026/08/13 11:15:50', method:'仅通知', resource:'开发机', org:'x86test-infra > myytest', creator:policies[0].creator, instances:[
+        {type:'开发机', name:'dev-nlp-01', id:'i-1786519078-nlp-01', creator:'lisi'},
+        {type:'开发机', name:'dev-nlp-02', id:'i-1786519091-nlp-02', creator:'lisi'}
+      ]},
+      { id:'e-008', policyId:'b46de0198c51a3220e9f84d3', trigger:'2026/08/13 11:05:49', method:'关闭', resource:'自定义任务', org:'x86test-infra > myytest', creator:policies[1].creator, instances:[
+        {type:'自定义任务', name:'j-1786519244-7628-64rdn', id:'j-1786519244-7628-64rdn', creator:'lizl'}
+      ]}
+    ];
+
+    const state = { view:'list', detailTab:'detail', isEditing:false, listQuery:'', auditQuery:'', auditPolicy:'全部策略', auditResource:'全部资源', timeRange:'全部时间', sort:'desc', page:1, pageSize:10, deletedIds:[], selectedInstance:null, instanceOrigin:null };
+    const $ = (selector) => document.querySelector(selector);
+    const escapeHTML = (value) => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
+
+    function icon(text) { return `<span aria-hidden="true">${text}</span>`; }
+    function button(label, className='', action='', attrs='') { return `<button type="button" class="btn ${className}" data-action="${action}" ${attrs}>${label}</button>`; }
+    function renderHeader() {
+      const isDetail = state.view === 'detail';
+      const isGroupAudit = state.view === 'groupAudit';
+      return `
+        <header class="topbar">
+          <div class="page-title">
+            ${isDetail || isGroupAudit ? `<button class="back-btn" title="返回策略列表" aria-label="返回策略列表" data-action="back-list">‹</button>` : '<span class="back-btn" aria-hidden="true">‹</span>'}
+            <h1>${isDetail ? `${escapeHTML(policy.name)} 清理策略详情 <span class="title-id">${policy.id}</span>` : isGroupAudit ? 'myytest 配额组清理事件审计' : 'myytest配额组详情'}</h1>
+          </div>
+          ${!isDetail && !isGroupAudit ? `<div class="header-actions"><label class="check-label"><input type="checkbox" checked /> 允许闲时任务调度</label>${button(`${icon('▣')} 删除`, 'danger', 'delete-policy')}</div>` : ''}
+        </header>`;
+    }
+    function renderNav() {
+      const items = ['基本信息','常规任务队列','用户管理','计算实例','云盘管理','私有机器','自动清理策略','用户配额限制','设置'];
+      return `<nav class="nav-tabs" aria-label="配额组详情导航">${items.map(item => `<span class="nav-item ${item === '自动清理策略' ? 'active' : ''}">${item}</span>`).join('')}</nav>`;
+    }
+    function selectPolicy(id) { const next = policies.find(item => item.id === id); if (next) policy = next; }
+    function activePolicies() { return policies.filter(item => !state.deletedIds.includes(item.id)); }
+    function renderList() {
+      const query = state.listQuery.toLowerCase();
+      const visible = activePolicies().filter(item => `${item.name} ${item.id} ${item.creator}`.toLowerCase().includes(query));
+      const rows = visible.map(item => `<tr>
+        <td><button class="name-link" data-action="open-detail" data-policy-id="${item.id}">${escapeHTML(item.name)}</button><div class="subtext">${item.id}</div></td>
+        <td>${escapeHTML(item.org)}</td><td>${item.scope}</td><td><span class="tag">${item.metric}</span></td>
+        <td>${item.idle}</td><td><span class="tag ${item.method === '关闭' ? 'orange' : 'blue'}">${item.method}</span></td>
+        <td><span class="tag ${item.enabled ? 'green' : 'orange'}">${item.enabled ? '已启用' : '已停用'}</span></td>
+        <td><div class="actions-inline"><button class="text-link" data-action="${item.enabled ? 'disable-policy' : 'enable-policy'}" data-policy-id="${item.id}">${item.enabled ? '停用' : '启用'}</button><button class="text-link" data-action="edit-policy" data-policy-id="${item.id}">编辑</button><button class="text-link" style="color:var(--danger)" data-action="delete-policy" data-policy-id="${item.id}">删除</button></div></td>
+      </tr>`).join('');
+      return `<main class="shell">${renderNav()}<section class="content-card">
+        <div class="toolbar"><div class="toolbar-left">${button(`${icon('＋')} 创建策略`, 'primary', 'create-policy')}${button(`${icon('▣')} 配额组清理事件审计`, 'ghost', 'open-audit-from-list', 'hidden')}</div>
+          <div class="toolbar-right"><label class="search-box" aria-label="搜索策略"><input id="list-search" value="${escapeHTML(state.listQuery)}" placeholder="请输入策略名称/创建者" /><span class="search-icon">⌕</span></label><button class="icon-btn" title="刷新列表" data-action="refresh-list">↻</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>名称/ID</th><th>组织范围</th><th>实例范围</th><th>监控指标</th><th>闲置时长（小时）</th><th>处理策略</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="8"><div class="empty"><div><div class="empty-icon">◌</div>暂无符合条件的清理策略</div></div></td></tr>`}</tbody></table></div>
+        <div class="pagination"><span>共 ${visible.length} 条</span><span class="page-arrow">‹</span><span class="page-current">1</span><span class="page-arrow">›</span><select class="filter-select" aria-label="每页条数"><option>20 条/页</option></select></div>
+      </section></main>`;
+    }
+    function renderDetailInfo() {
+      return `<div class="section-title"><h3>基本信息</h3></div>
+      <div class="detail-form">
+        <div class="detail-form-row"><div class="detail-form-label">名称</div><div class="detail-form-value">${escapeHTML(policy.name)}</div></div>
+        <div class="detail-form-row"><div class="detail-form-label">组织范围</div><div class="detail-form-value"><div class="org-path"><span class="path-box">x86test-infra <span>⌄</span></span><span class="path-box">myytest <span>⌄</span></span></div></div></div>
+        <div class="detail-form-row"><div class="detail-form-label">实例范围</div><div class="detail-form-value"><span class="path-box" style="min-width:360px">${policy.scope} <span>⌄</span></span></div></div>
+        <div class="detail-form-row"><div class="detail-form-label">监控指标</div><div class="detail-form-value"><div class="metric-panel"><div class="metric-condition"><span class="metric-select">GPU <span>⌄</span></span><strong style="font-weight:500">≤</strong><span class="metric-input">1 <b>%</b></span></div><button class="text-link" type="button" data-action="edit-policy">编辑监控指标</button></div></div></div>
+        <div class="detail-form-row"><div class="detail-form-label">闲置时长 <span title="连续满足监控指标的最短时长">ⓘ</span></div><div class="detail-form-value"><div class="inline-rule"><strong style="font-weight:500">≥</strong><span class="number-box">${policy.idle}</span><span>小时</span></div></div></div>
+        <div class="detail-form-row"><div class="detail-form-label">处理策略</div><div class="detail-form-value"><span class="path-box" style="min-width:360px">${policy.method} <span>⌄</span></span></div></div>
+      </div>
+      <div class="detail-extra">
+        <div><div class="desc-label">策略状态</div><div class="desc-value"><label class="switch"><input id="policy-enabled" type="checkbox" ${policy.enabled ? 'checked' : ''} /><span class="slider"></span></label> <span id="policy-state-text">${policy.enabled ? '已启用' : '已停用'}</span></div></div>
+      </div>
+      <div class="history-note"><strong>ⓘ</strong><span>策略触发后将根据设定的处理方式执行；所有触发记录均可在“事件审计”中追溯。</span></div>`;
+    }
+    function renderDetailInfoInline() {
+      const edit = state.isEditing;
+      const select = (id, value, options, className = 'inline-edit-control') => edit
+        ? `<select id="${id}" class="${className}">${options.map(option => `<option value="${option}" ${option === value ? 'selected' : ''}>${option}</option>`).join('')}</select>`
+        : `<span class="path-box" style="min-width:360px">${escapeHTML(value)} <span>⌄</span></span>`;
+      const nameValue = edit ? `<input id="inline-name" class="inline-edit-control" value="${escapeHTML(policy.name)}" />` : escapeHTML(policy.name);
+      const orgValue = edit
+        ? `<div class="org-path"><select id="inline-org-root" class="inline-edit-control compact"><option>x86test-infra</option></select><select id="inline-org-project" class="inline-edit-control compact"><option>myytest</option></select></div>`
+        : `<div class="org-path"><span class="path-box">x86test-infra <span>⌄</span></span><span class="path-box">myytest <span>⌄</span></span></div>`;
+      const metricContent = edit
+        ? `<div class="metric-panel"><div class="metric-condition"><span class="metric-select"><select id="inline-metric"><option>GPU</option><option>CPU</option><option>内存</option></select></span><strong style="font-weight:500">≤</strong><span class="metric-input"><input id="inline-metric-value" type="number" min="0" max="100" value="${policy.metricValue}" /><b>%</b></span></div><button class="text-link" type="button" data-action="add-metric">＋ 添加监控指标（1/3）</button></div>`
+        : `<div class="metric-panel"><div class="metric-condition"><span class="metric-select">${policy.metricName} <span>⌄</span></span><strong style="font-weight:500">≤</strong><span class="metric-input">${policy.metricValue} <b>%</b></span></div></div>`;
+      const idleContent = edit ? `<div class="inline-rule"><strong style="font-weight:500">≥</strong><input id="inline-idle" class="inline-edit-control compact" type="number" min="1" value="${policy.idle}" /><span>小时</span></div>` : `<div class="inline-rule"><strong style="font-weight:500">≥</strong><span class="number-box">${policy.idle}</span><span>小时</span></div>`;
+      const notifyRows = policy.method === '仅通知' || edit ? `<div class="detail-form-row"><div class="detail-form-label">通知方式</div><div class="detail-form-value">${edit ? `<select id="inline-notify-method" class="inline-edit-control"><option>飞书通知</option><option>邮件通知</option></select>` : policy.notifyMethod}</div></div><div class="detail-form-row"><div class="detail-form-label">通知地址</div><div class="detail-form-value" style="display:block">${edit ? `<input id="inline-notify-url" class="inline-edit-control" value="${escapeHTML(policy.notifyUrl)}" />` : `<div>${escapeHTML(policy.notifyUrl)}</div>`}<div class="subtext" style="margin-top:6px">填写接收告警事件的 URL；平台将在触发告警时向该地址推送消息通知。</div></div></div>` : '';
+      return `<div class="section-title"><h3>基本信息</h3></div>
+      <div class="detail-form">
+        <div class="detail-form-row"><div class="detail-form-label">名称</div><div class="detail-form-value">${nameValue}</div></div>
+        <div class="detail-form-row"><div class="detail-form-label">组织范围</div><div class="detail-form-value">${orgValue}</div></div>
+        <div class="detail-form-row"><div class="detail-form-label">实例范围</div><div class="detail-form-value">${select('inline-scope', policy.scope, ['workspace','rjob','开发机'])}</div></div>
+        <div class="detail-form-row"><div class="detail-form-label">监控指标</div><div class="detail-form-value">${metricContent}</div></div>
+        <div class="detail-form-row"><div class="detail-form-label">闲置时长 <span title="连续满足监控指标的最短时长">ⓘ</span></div><div class="detail-form-value">${idleContent}</div></div>
+        <div class="detail-form-row"><div class="detail-form-label">处理策略</div><div class="detail-form-value">${select('inline-method', policy.method, ['仅通知','关闭'])}</div></div>
+        ${notifyRows}
+      </div>
+      <div class="detail-extra">
+        <div><div class="desc-label">策略状态</div><div class="desc-value"><label class="switch"><input id="policy-enabled" type="checkbox" ${policy.enabled ? 'checked' : ''} /><span class="slider"></span></label> <span id="policy-state-text">${policy.enabled ? '已启用' : '已停用'}</span></div></div>
+      </div>
+      <div class="history-note"><strong>ⓘ</strong><span>策略触发后将根据设定的处理方式执行；所有触发记录均可在“事件审计”中追溯。</span></div>
+      ${edit ? `<div class="detail-edit-footer">${button('取消', 'ghost', 'cancel-inline-edit')}${button('确定', 'primary', 'save-inline-edit')}</div>` : ''}`;
+    }
+    function getFilteredEvents(scope = 'policy') {
+      let events = auditEvents.filter(event => {
+        const eventPolicy = policies.find(item => item.id === event.policyId) || policy;
+        const eventTime = new Date(event.trigger.replace(/\//g, '-')).getTime();
+        const referenceTime = new Date('2026-08-13T12:30:00').getTime();
+        const timeMatches = state.timeRange === '全部时间' || (state.timeRange === '近 24 小时' && eventTime >= referenceTime - 24 * 60 * 60 * 1000) || (state.timeRange === '近 7 天' && eventTime >= referenceTime - 7 * 24 * 60 * 60 * 1000);
+        const scopeMatches = scope === 'group' || event.policyId === policy.id;
+        const policyMatches = scope !== 'group' || state.auditPolicy === '全部策略' || event.policyId === state.auditPolicy;
+        return scopeMatches && policyMatches && (state.auditResource === '全部资源' || event.resource === state.auditResource) && timeMatches;
+      });
+      events.sort((a,b) => state.sort === 'desc' ? b.trigger.localeCompare(a.trigger) : a.trigger.localeCompare(b.trigger));
+      return events;
+    }
+    function getAuditRecords(scope = 'policy') {
+      const query = state.auditQuery.toLowerCase().trim();
+      return getFilteredEvents(scope).flatMap(event => {
+        const eventPolicy = policies.find(item => item.id === event.policyId) || policy;
+        return event.instances.map(instance => ({ event, eventPolicy, instance }));
+      }).filter(record => {
+        const text = [record.eventPolicy.name, record.eventPolicy.id, record.event.resource, record.event.creator, record.event.org, record.instance.name, record.instance.id, record.instance.creator].join(' ').toLowerCase();
+        return !query || text.includes(query);
+      });
+    }
+    function renderAudit(scope = 'policy') {
+      const isGroupAudit = scope === 'group';
+      const records = getAuditRecords(scope);
+      const pages = Math.max(1, Math.ceil(records.length / state.pageSize));
+      if (state.page > pages) state.page = pages;
+      const start = (state.page - 1) * state.pageSize;
+      const rows = records.slice(start, start + state.pageSize).map(({event,eventPolicy,instance}) => {
+        return `<tr>
+        <td><div><strong>${eventPolicy.name}</strong><div class="subtext">${eventPolicy.id}</div></div></td>
+        <td><span class="tag ${event.method === '关闭' ? 'orange' : 'blue'}">${event.method}</span></td>
+        <td>${event.trigger}</td>
+        <td><button class="text-link" data-action="open-event-instance-detail" data-event-id="${event.id}" data-instance-id="${escapeHTML(instance.id)}">${escapeHTML(instance.name)}</button><div class="subtext">${escapeHTML(instance.id)}</div></td>
+        <td>${event.resource}</td><td>${event.org}</td><td>${event.creator}</td>
+      </tr>`; }).join('');
+      return `<div class="section-title"><h3>${isGroupAudit ? '配额组清理事件审计' : '策略事件审计'}</h3><span class="subtext">${isGroupAudit ? '展示当前配额组下所有清理策略的触发与处理事件' : '仅展示当前策略的触发与处理记录'}</span></div>
+      <div class="toolbar" style="margin-bottom:18px"><div class="toolbar-left"><label class="search-box" style="width:315px"><input id="audit-search" value="${escapeHTML(state.auditQuery)}" placeholder="${isGroupAudit ? '请输入策略名称/ID/实例名称' : '请输入实例名称/ID/创建者'}" /><span class="search-icon">⌕</span></label>
+        ${isGroupAudit ? `<select id="policy-filter" class="filter-select" aria-label="清理策略"><option value="全部策略">全部策略</option>${policies.map(item => `<option value="${item.id}">${item.name}</option>`).join('')}</select>` : ''}
+        <select id="resource-filter" class="filter-select" aria-label="资源类型"><option>全部资源</option><option>自定义任务</option><option>开发机</option><option>rlaunch</option></select>
+        <select id="time-filter" class="filter-select" aria-label="触发时间"><option>全部时间</option><option>近 24 小时</option><option>近 7 天</option></select></div>
+        <div class="toolbar-right"><select id="sort-filter" class="filter-select" aria-label="排序"><option value="desc">触发时间：最新在前</option><option value="asc">触发时间：最早在前</option></select>${button('↻ 刷新', 'ghost', 'refresh-audit')}</div></div>
+      <div class="table-wrap"><table><thead><tr><th>触发策略名称/ID</th><th>处理方式</th><th>最新触发时间</th><th>实例对象</th><th>资源类型</th><th>所属组织</th><th>策略创建者</th></tr></thead><tbody>${rows || `<tr><td colspan="7"><div class="empty"><div><div class="empty-icon">◌</div>暂无符合条件的审计记录</div></div></td></tr>`}</tbody></table></div>
+      <div class="pagination"><span>共 ${records.length} 条</span><button class="icon-btn" style="font-size:24px" data-action="prev-page" ${state.page === 1 ? 'disabled' : ''}>‹</button><span class="page-current">${state.page}</span><button class="icon-btn" style="font-size:24px" data-action="next-page" ${state.page === pages ? 'disabled' : ''}>›</button><select id="page-size" class="filter-select" aria-label="每页条数"><option value="10">10 条/页</option><option value="20">20 条/页</option></select></div>`;
+    }
+    function renderDetail() {
+      const isDetail = state.detailTab === 'detail';
+      return `<main class="shell"><section class="content-card ${state.isEditing ? 'editing-card' : ''}">
+        <div class="detail-head"><div><div class="crumb">自动清理策略 / ${escapeHTML(policy.name)}</div><h2>${escapeHTML(policy.name)}</h2><div class="detail-meta">策略 ID：${policy.id}</div></div><div class="detail-actions-stack" ${state.isEditing ? 'style="display:none"' : ''}><div class="toolbar-right">${button('编辑', 'ghost', 'edit-policy')}${button(`${icon('▣')} 删除`, 'danger', 'delete-policy')}</div></div></div>
+        <div class="detail-tabs" role="tablist"><button class="detail-tab ${isDetail ? 'active' : ''}" role="tab" data-action="tab-detail">策略详情</button><button class="detail-tab ${!isDetail ? 'active' : ''}" role="tab" data-action="tab-audit">事件审计 <span class="tag blue" style="margin-left:5px">${auditEvents.filter(event => event.policyId === policy.id).reduce((count,event) => count + event.instances.length, 0)}</span></button></div>
+        <div id="detail-content">${isDetail ? renderDetailInfoInline() : renderAudit('policy')}</div>
+      </section></main>`;
+    }
+    function renderGroupAudit() {
+      return `<main class="shell"><section class="content-card"><div class="history-note" style="margin-top:0"><strong>ⓘ</strong><span>此处记录 myytest 配额组下全部自动清理策略的触发与处理事件，可通过策略名称/ID、实例、资源类型和时间进行排查。</span></div>${renderAudit('group')}</section></main>`;
+    }
+    function renderInstanceDetail() {
+      const instance = state.selectedInstance;
+      if (!instance) return '';
+      const wasClosed = state.instanceOrigin?.method === '关闭';
+      const kindLabel = instance.type === '自定义任务' ? '自定义任务' : instance.type;
+      return `<main class="instance-page">
+        <header class="instance-topbar"><div class="instance-brand">仪电智算云<span>实例管理</span></div></header>
+        <div class="instance-layout"><aside class="instance-sidebar"><p class="side-title">资源运维</p><span class="side-item">机器管理</span><span class="side-item active">实例管理</span><span class="side-item">监控中心</span><span class="side-item">告警中心</span></aside>
+          <section class="instance-main"><div class="instance-crumb">资源运维 / 实例管理 / ${escapeHTML(kindLabel)}</div><div class="instance-title-row"><h1>${escapeHTML(instance.name)}</h1>${button('← 返回事件审计', 'ghost', 'back-to-audit')}</div>
+            <div class="instance-tabs"><span class="active">概览信息</span><span>事件</span><span>日志</span><span>监控</span></div>
+            <section class="instance-info-card"><h2>基本信息</h2><div class="instance-kv"><div class="instance-kv-item"><label>实例名称</label><div>${escapeHTML(instance.name)}</div></div><div class="instance-kv-item"><label>实例 ID</label><div>${escapeHTML(instance.id)}</div></div><div class="instance-kv-item"><label>实例类型</label><div>${escapeHTML(kindLabel)}</div></div><div class="instance-kv-item"><label>状态</label><div><span class="${wasClosed ? 'status-closed' : 'status-running'}">${wasClosed ? '◉ 已关闭' : '◉ 运行中'}</span></div></div><div class="instance-kv-item"><label>创建者</label><div>${escapeHTML(instance.creator)}</div></div><div class="instance-kv-item"><label>所属项目</label><div>x86test-infra</div></div></div></section>
+            <section class="instance-info-card"><h2>清理策略关联信息</h2><div class="instance-kv"><div class="instance-kv-item"><label>触发策略</label><div>${escapeHTML(state.instanceOrigin?.policyName || '-')}</div></div><div class="instance-kv-item"><label>触发时间</label><div>${escapeHTML(state.instanceOrigin?.trigger || '-')}</div></div><div class="instance-kv-item"><label>处理方式</label><div>${escapeHTML(state.instanceOrigin?.method || '-')}</div></div></div></section>
+            <section class="instance-info-card"><h2>资源配置</h2><div class="instance-kv"><div class="instance-kv-item"><label>资源规格</label><div>${instance.type === '开发机' ? '8 核 / 1 卡 / 32Gi' : '4 核 / 1 卡 / 16Gi'}</div></div><div class="instance-kv-item"><label>镜像</label><div>pytorch:2.2-cuda12</div></div><div class="instance-kv-item"><label>所在机器</label><div>infra-muxi-gpu-012</div></div></div></section>
+          </section></div></main>`;
+    }
+    function renderApp() { $('#app').innerHTML = state.view === 'instanceDetail' ? renderInstanceDetail() : renderHeader() + (state.view === 'list' ? renderList() : state.view === 'groupAudit' ? renderGroupAudit() : renderDetail()); bindDynamicControls(); }
+    function bindDynamicControls() {
+      const listSearch = $('#list-search'); if (listSearch) listSearch.addEventListener('input', e => { state.listQuery = e.target.value; renderApp(); $('#list-search').focus(); });
+      const auditSearch = $('#audit-search'); if (auditSearch) auditSearch.addEventListener('input', e => { state.auditQuery = e.target.value; state.page = 1; renderApp(); $('#audit-search').focus(); });
+      const policyFilter = $('#policy-filter'); if (policyFilter) { policyFilter.value = state.auditPolicy; policyFilter.addEventListener('change', e => { state.auditPolicy = e.target.value; state.page = 1; renderApp(); }); }
+      const resource = $('#resource-filter'); if (resource) { resource.value = state.auditResource; resource.addEventListener('change', e => { state.auditResource = e.target.value; state.page = 1; renderApp(); }); }
+      const time = $('#time-filter'); if (time) { time.value = state.timeRange; time.addEventListener('change', e => { state.timeRange = e.target.value; state.page = 1; renderApp(); }); }
+      const sort = $('#sort-filter'); if (sort) { sort.value = state.sort; sort.addEventListener('change', e => { state.sort = e.target.value; state.page = 1; renderApp(); }); }
+      const pageSize = $('#page-size'); if (pageSize) { pageSize.value = state.pageSize; pageSize.addEventListener('change', e => { state.pageSize = Number(e.target.value); state.page = 1; renderApp(); }); }
+      const enabled = $('#policy-enabled'); if (enabled) enabled.addEventListener('change', e => {
+        if (e.target.checked) {
+          policy.enabled = true;
+          policy.updatedAt = '2026/08/17 10:45:00';
+          $('#policy-state-text').textContent = '已启用';
+          toast('清理策略已启用');
+        } else {
+          e.target.checked = true;
+          openModal('disable');
+        }
+      });
+    }
+    function toast(message, kind='success') { const el = $('#toast'); el.className = `toast ${kind} show`; el.innerHTML = `<span>${kind === 'success' ? '✓' : 'ⓘ'}</span>${escapeHTML(message)}`; clearTimeout(window.toastTimer); window.toastTimer = setTimeout(() => el.classList.remove('show'), 2600); }
+    function setOverlay(show) { $('#overlay').classList.toggle('show', show); $('#overlay').setAttribute('aria-hidden', String(!show)); }
+    function openModal(kind) {
+      const modal = $('#modal');
+      if (kind === 'edit' || kind === 'create') {
+        const creating = kind === 'create';
+        modal.innerHTML = `<div class="modal-header"><h2>${creating ? '创建清理策略' : '编辑清理策略'}</h2><button class="icon-btn" aria-label="关闭" data-action="close-modal">×</button></div>
+          <form id="policy-form" data-mode="${creating ? 'create' : 'edit'}"><div class="modal-body"><div class="form-field"><label for="field-name">策略名称</label><input id="field-name" class="field-control" required value="${creating ? '' : escapeHTML(policy.name)}" placeholder="请输入策略名称" /></div>
+          <div class="form-field"><label for="field-scope">实例范围</label><select id="field-scope" class="field-control"><option value="workspace">workspace</option><option value="rjob">rjob</option><option value="开发机">开发机</option></select></div>
+          <div class="form-field"><label for="field-idle">闲置时长（小时）</label><input id="field-idle" class="field-control" type="number" min="1" value="${policy.idle}" /></div>
+          <div class="form-field"><label for="field-method">处理策略</label><select id="field-method" class="field-control"><option value="仅通知">仅通知</option><option value="关闭">关闭</option></select></div></div>
+          <div class="modal-footer">${button('取消', 'ghost', 'close-modal')}${button(creating ? '创建' : '保存', 'primary', 'save-policy')}</div></form>`;
+        $('#field-scope').value = policy.scope; $('#field-method').value = policy.method;
+      } else if (kind === 'disable') {
+        modal.innerHTML = `<div class="modal-header"><h2>停用清理策略</h2><button class="icon-btn" aria-label="关闭" data-action="close-modal">×</button></div><div class="modal-body"><p class="confirm-copy">确定要停用清理策略 <strong>“${escapeHTML(policy.name)}”</strong> 吗？停用后，该策略将不再触发新的清理动作；历史执行记录不会受到影响。</p></div><div class="modal-footer">${button('取消', 'ghost', 'close-modal')}${button('确认停用', 'danger', 'confirm-disable')}</div>`;
+      } else {
+        modal.innerHTML = `<div class="modal-header"><h2>删除清理策略</h2><button class="icon-btn" aria-label="关闭" data-action="close-modal">×</button></div><div class="modal-body"><p class="confirm-copy">确定要删除清理策略 <strong>“${escapeHTML(policy.name)}”</strong> 吗？删除后将不再执行该策略，但历史审计记录不会被删除。</p></div><div class="modal-footer">${button('取消', 'ghost', 'close-modal')}${button('确认删除', 'danger', 'confirm-delete')}</div>`;
+      }
+      setOverlay(true); modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
+    }
+    function closeModal() { $('#modal').classList.remove('show'); $('#modal').setAttribute('aria-hidden','true'); setOverlay(false); }
+    function savePolicy() {
+      const name = $('#field-name').value.trim();
+      if (!name) { toast('请输入策略名称', 'warning'); $('#field-name').focus(); return; }
+      if ($('#policy-form').dataset.mode === 'create') { closeModal(); toast(`已创建策略“${name}”（原型演示）`); return; }
+      policy.name = name; policy.scope = $('#field-scope').value; policy.idle = Number($('#field-idle').value) || policy.idle; policy.method = $('#field-method').value; policy.updatedAt = '2026/08/17 10:30:00'; closeModal(); renderApp(); toast('清理策略已保存');
+    }
+    function saveInlinePolicy() {
+      const name = $('#inline-name').value.trim();
+      if (!name) { toast('请输入策略名称', 'warning'); $('#inline-name').focus(); return; }
+      policy.name = name;
+      policy.scope = $('#inline-scope').value;
+      policy.metricName = $('#inline-metric').value;
+      policy.metricValue = Math.max(0, Math.min(100, Number($('#inline-metric-value').value) || 0));
+      policy.metric = `${policy.metricName} ≤ ${policy.metricValue}%`;
+      policy.idle = Math.max(1, Number($('#inline-idle').value) || 1);
+      policy.method = $('#inline-method').value;
+      if ($('#inline-notify-method')) policy.notifyMethod = $('#inline-notify-method').value;
+      if ($('#inline-notify-url')) policy.notifyUrl = $('#inline-notify-url').value.trim();
+      policy.updatedAt = '2026/08/17 10:30:00';
+      state.isEditing = false;
+      renderApp();
+      toast('清理策略已保存');
+    }
+    function handleAction(action, el, sourceEvent) {
+      if (el.dataset.policyId) selectPolicy(el.dataset.policyId);
+      if (action === 'open-detail') { state.view = 'detail'; state.detailTab = 'detail'; state.isEditing = false; renderApp(); }
+      if (action === 'back-list') { state.view = 'list'; state.isEditing = false; renderApp(); }
+      if (action === 'tab-detail') { state.detailTab = 'detail'; renderApp(); }
+      if (action === 'tab-audit') { state.view = 'detail'; state.detailTab = 'audit'; state.isEditing = false; renderApp(); }
+      if (action === 'open-audit-from-list') { state.view = 'groupAudit'; state.auditQuery = ''; state.auditPolicy = '全部策略'; state.auditResource = '全部资源'; state.timeRange = '全部时间'; state.page = 1; renderApp(); }
+      if (action === 'edit-policy') {
+        state.view = 'detail';
+        state.detailTab = 'detail';
+        state.isEditing = true;
+        renderApp();
+      }
+      if (action === 'enable-policy') {
+        policy.enabled = true;
+        policy.updatedAt = '2026/08/17 10:45:00';
+        renderApp();
+        toast('清理策略已启用');
+      }
+      if (action === 'disable-policy') openModal('disable');
+      if (action === 'cancel-inline-edit') { state.isEditing = false; renderApp(); toast('已取消本次修改', 'warning'); }
+      if (action === 'save-inline-edit') saveInlinePolicy();
+      if (action === 'add-metric') toast('最多可添加 3 个监控指标（原型演示）');
+      if (action === 'create-policy') openModal('create');
+      if (action === 'delete-policy') openModal('delete');
+      if (action === 'close-modal') closeModal();
+      if (action === 'save-policy') { sourceEvent?.preventDefault(); savePolicy(); }
+      if (action === 'confirm-disable') {
+        policy.enabled = false;
+        policy.updatedAt = '2026/08/17 10:45:00';
+        closeModal();
+        renderApp();
+        toast('清理策略已停用', 'warning');
+      }
+      if (action === 'confirm-delete') { state.deletedIds.push(policy.id); closeModal(); state.view = 'list'; renderApp(); toast('清理策略已删除', 'warning'); }
+      if (action === 'refresh-list' || action === 'refresh-audit') toast('数据已刷新');
+      if (action === 'open-event-instance-detail') {
+        const event = auditEvents.find(item => item.id === el.dataset.eventId);
+        const instance = event?.instances.find(item => item.id === el.dataset.instanceId);
+        if (!event || !instance) return;
+        const eventPolicy = policies.find(item => item.id === event.policyId) || policy;
+        state.selectedInstance = instance;
+        state.instanceOrigin = { view:state.view, detailTab:state.detailTab, trigger:event.trigger, method:event.method, policyName:eventPolicy.name };
+        state.view = 'instanceDetail';
+        renderApp();
+      }
+      if (action === 'back-to-audit') {
+        const origin = state.instanceOrigin;
+        state.view = origin?.view || 'groupAudit';
+        state.detailTab = origin?.detailTab || 'audit';
+        renderApp();
+      }
+      if (action === 'prev-page') { state.page = Math.max(1, state.page - 1); renderApp(); }
+      if (action === 'next-page') { const scope = state.view === 'groupAudit' ? 'group' : 'policy'; const pages = Math.ceil(getAuditRecords(scope).length / state.pageSize); state.page = Math.min(pages, state.page + 1); renderApp(); }
+    }
+    document.addEventListener('click', event => { const target = event.target.closest('[data-action]'); if (target) handleAction(target.dataset.action, target, event); if (event.target === $('#overlay')) closeModal(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') { if (state.view === 'instanceDetail') handleAction('back-to-audit'); else closeModal(); } });
+    renderApp();
+  </script>
+</body>
+</html>
